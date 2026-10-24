@@ -1,6 +1,36 @@
 {
     "terminal.integrated.stickyScroll.enabled": false,
-    "nrf-connect.boardRoots": [
+
+    "zephyr-workbench.westWorkspace": "c:\\ncs\\v3.3.0",
+    "zephyr-workbench.sdk": "c:\\ncs\\toolchains\\936afb6332\\opt\\zephyr-sdk",
+    "zephyr-workbench.toolchain": "zephyr",
+    "zephyr-workbench.env.BOARD_ROOT": [
         "${workspaceFolder}"
+    ],
+    "zephyr-workbench.build.active": 0,
+    "zephyr-workbench.build.configurations": [
+        {
+            "name": "piggysat",
+            "active": "true",
+            "board": "piggysat/nrf9151/ns",
+            "sysbuild": "true",
+            "default-runner": "nrfutil",
+            "west-flags": [
+                "-DBOARD_ROOT=."
+            ]
+        },
+        {
+            "name": "piggysat-debug",
+            "active": "false",
+            "board": "piggysat/nrf9151/ns",
+            "sysbuild": "true",
+            "default-runner": "nrfutil",
+            "west-flags": [
+                "-DBOARD_ROOT=."
+            ],
+            "env.EXTRA_CONF_FILE": [
+                "fatal-debug.conf"
+            ]
+        }
     ]
 }

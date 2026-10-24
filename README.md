@@ -73,20 +73,37 @@ The ThingsBoard access token is not committed. Copy [secrets.conf.example](secre
 automatically.
 
 The PiggySat board definition lives in [boards/piggysat/](boards/piggysat/). Sysbuild only finds it
-when the project folder is passed as a board root (the nRF Connect VS Code extension does this
-through `nrf-connect.boardRoots` in `.vscode/settings.json`):
+when the project folder is passed as a board root.
+
+### Zephyr Workbench (VS Code)
+
+The project is set up for [Zephyr Workbench](https://marketplace.visualstudio.com/items?itemName=Ac6.zephyr-workbench)
+in [.vscode/settings.json](.vscode/settings.json): west workspace `c:\ncs\v3.3.0`, the Zephyr SDK from
+the NCS v3.3.0 toolchain, and two build configurations (both `piggysat/nrf9151/ns`, sysbuild,
+`-DBOARD_ROOT=.`, `nrfutil` runner):
+
+| Configuration | Build directory | Extra |
+|---|---|---|
+| `piggysat` (active) | `build/piggysat` | none |
+| `piggysat-debug` | `build/piggysat-debug` | `fatal-debug.conf` (no reset on fault, immediate logging) |
+
+The NCS and toolchain paths are machine-specific; adjust them in `.vscode/settings.json` if your
+installation differs.
+
+### Command line
 
 ```sh
-west build -p always -b piggysat/nrf9151/ns -- -DBOARD_ROOT=.
-west flash
+west build -p always -b piggysat/nrf9151/ns -d build/piggysat --sysbuild -- -DBOARD_ROOT=.
+west flash -d build/piggysat
 ```
+
+For the debug variant, add `-DEXTRA_CONF_FILE=fatal-debug.conf` after the `--`.
 
 The board has no UART, so logs come out over RTT through the TC2030 SWD cable
 (J-Link RTT Viewer, or `west rtt`).
 
 Board-specific application settings are in
-[boards/piggysat_nrf9151_ns.conf](boards/piggysat_nrf9151_ns.conf). For debugging fatal errors (no reset on
-fault, immediate logging), add `-DEXTRA_CONF_FILE=fatal-debug.conf` after the `--`.
+[boards/piggysat_nrf9151_ns.conf](boards/piggysat_nrf9151_ns.conf).
 
 ## PiggySat board I/O
 
