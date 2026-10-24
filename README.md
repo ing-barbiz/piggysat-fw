@@ -120,3 +120,18 @@ from the modem.
 - the port must match the ThingsBoard CoAP listener
 - the access token must match the ThingsBoard device exactly
 - `CoAP response code` in the log shows what the server answered; non-2.xx is a rejection
+
+## Licensing
+
+The firmware is licensed under the [Apache License 2.0](LICENSE), except for the files derived from
+Nordic Semiconductor's nRF Connect SDK UDP sample. Each file states its licence in an
+`SPDX-License-Identifier` header; the full texts are in [LICENSES/](LICENSES/).
+
+| Licence | Files |
+|---|---|
+| `Apache-2.0` | `src/app_antenna.c`, `src/app_gnss.c`, `src/app_leds.c`, `src/app_rftest.c`, `src/app_internal.h`, `boards/` (adapted from Zephyr's nRF9151 DK board), documentation |
+| `LicenseRef-Nordic-5-Clause` | `src/main.c`, `src/app_modem.c`, `src/app_transport.c`, `CMakeLists.txt`, `Kconfig`, `prj.conf` (derived from the Nordic UDP sample) |
+
+The Nordic licence only permits use with Nordic Semiconductor integrated circuits. The built firmware
+also links Nordic's closed-source modem library (`nrf_modem`) and other nRF Connect SDK components
+under their own licences.

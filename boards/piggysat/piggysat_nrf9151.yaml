@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 identifier: piggysat/nrf9151
 name: PiggySat-NRF9151
 type: mcu

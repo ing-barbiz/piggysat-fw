@@ -1,3 +1,7 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #ifndef APP_INTERNAL_H_
 #define APP_INTERNAL_H_
 
