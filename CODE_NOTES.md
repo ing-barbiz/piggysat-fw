@@ -1,17 +1,20 @@
 # Code Notes
 
 The application is a hardware test tool for the PiggySat board. `main()` initialises the board and
-the modem, then loops on an RTT menu. Each test runs to completion (or until `q` + Enter) on the main
-thread and leaves the modem offline (`CFUN=0`) before returning to the menu.
+the modem and returns; the tests are Zephyr shell commands over RTT (`src/app_shell.c`). Continuous
+tests are `start`/`stop` pairs so the shell stays responsive, and every modem test leaves the modem
+offline (`CFUN=0`) when it ends.
 
 ## Source Layout
 
-- `src/main.c`: reset-cause logging, modem init, RTT input helpers (`console_key_pressed()`,
-  `console_flush_input()`), and the menu loop
-- `src/app_leds.c`: LED init and test 1
-- `src/app_rftest.c`: test 2, LTE CW TX with `AT%XRFTEST`
-- `src/app_gnss.c`: test 3, continuous GNSS with NMEA output; also `format_timestamp()`
-- `src/app_transport.c`: test 4, DNS resolution, CoAP client and the one-shot telemetry `POST`
+- `src/main.c`: reset-cause logging, board and modem init
+- `src/app_shell.c`: shell commands `led`, `button`, `cw`, `gnss`, `lte`, `sim`, and the modem lock
+- `src/app_leds.c`: LED init and the background LED cycle
+- `src/app_button.c`: `button`, touch button press/release reporting
+- `src/app_rftest.c`: `cw`, LTE CW TX with `AT%XRFTEST`
+- `src/app_gnss.c`: `gnss`, continuous GNSS with NMEA output; also `format_timestamp()`
+- `src/app_simtest.c`: `sim`, SIM card presence check
+- `src/app_transport.c`: `lte`, DNS resolution, CoAP client and the one-shot telemetry `POST`
 - `src/app_modem.c`: modem firmware check, identity logging, NTN setup with the fixed Kconfig location,
   LTE event handling and link state
 - `src/app_antenna.c`: J3 antenna selection switch (low = LTE, high = GNSS)
@@ -20,25 +23,42 @@ thread and leaves the modem offline (`CFUN=0`) before returning to the menu.
 ## Boot
 
 1. log the reset cause
-2. set the antenna switch to LTE and turn all LEDs off
+2. set the antenna switch to LTE and turn all LEDs off, start the `lte` work queue
 3. initialise the modem library, check `AT+CGMR` against `CONFIG_APP_MODEM_FW_EXPECTED`, log
    `AT+CGMM` and `%HWVERSION`, start the CoAP client
 
-If any modem step fails, the menu still runs but only test 1 is accepted.
+If any modem step fails, only `led` and `button` are accepted.
 
-## RTT Console
+## Shell
 
-Input is read directly from RTT down-buffer 0 with `SEGGER_RTT_Read()`. Output is `printk()` on the
-RTT console; logs use the RTT log backend on the same channel. RTT viewers send a line on Enter, so
-the menu reads the first non-blank character and then flushes the rest of the line. During a test,
-any non-blank character stops it.
+The RTT shell backend (`CONFIG_SHELL_BACKEND_RTT`, board conf) uses RTT channel 0; logs are printed
+through the shell (`CONFIG_SHELL_LOG_BACKEND`), the separate RTT log backend is off. Zephyr's default
+shell commands (`SHELL_CMDS`, `date`, `device`, `devmem`, `kernel`) are disabled. The NCS `lte`
+link-control shell is disabled (`CONFIG_LTE_SHELL=n`) because it clashes with the test tool's `lte`.
+The RTT shell backend does not support immediate log mode, so `fatal-debug.conf` only disables
+reset-on-fatal-error.
+
+Shell commands run in the shell thread, so nothing may block there for long:
+
+- `led`: a delayable work item steps the LEDs every 500 ms
+- `button`: a both-edges GPIO interrupt submits a work item that reads the pin and prints state
+  changes
+- `cw`: start configures the modem and turns `%XRFTEST` on; stop turns it off
+- `gnss`: the GNSS event handler (interrupt context) queues NMEA sentences and submits a work item
+  that prints them with `shell_print()` to the shell that started the test
+- `lte send`: runs on a dedicated work queue; `lte abort` sets a flag checked while waiting for the
+  network; the job releases the modem lock when it ends
+- `sim`: short (up to about 5 s), runs directly in the shell thread
+
+`cw`, `gnss`, `lte` and `sim` take a modem lock (`modem_test_claim()` / `modem_test_release()`), so a
+second modem test is refused while one is active.
 
 ## Antenna Switch
 
-The switch only changes while the radio is off: GNSS before entering GPS mode (test 3), LTE before
-entering NTN mode (tests 2 and 4).
+The switch only changes while the radio is off: GNSS before entering GPS mode (`gnss`), LTE before
+entering NTN mode (`cw`, `lte`).
 
-## Test 2: CW TX
+## `cw`: CW TX
 
 `CFUN=0`, antenna on LTE, `LTE_LC_SYSTEM_MODE_NTN_NBIOT`, then
 
@@ -48,20 +68,29 @@ entering NTN mode (tests 2 and 4).
 `%XRFTEST: <antenna_power>` is the internally measured power in q4 dBm (divide by 16). The modem
 offsets the CW tone from `<freq>` (48.75 kHz in NB-IoT mode). `AT%XRFTEST=1,0` stops it.
 
-## Test 3: GNSS NMEA
+## `gnss`: GNSS NMEA
 
 GPS system mode, GNSS functional mode, NMEA mask GGA/GLL/GSA/GSV/RMC, fix retry 0 (no timeout), fix
 interval 1 s (continuous). The GNSS event handler runs in interrupt context, so it only reads each
-NMEA sentence into a message queue; the test loop prints them. Dropped sentences are counted and
+NMEA sentence into a message queue; a work item prints them. Dropped sentences are counted and
 reported when the test stops. Fixes are not stored anywhere.
 
-## Test 4: LTE Message
+## `sim`: SIM Check
+
+`CFUN=0`, NTN system mode (the UICC cannot be activated in GPS-only mode, which `gnss` leaves
+behind), `AT+CMEE=1`, then `AT+CFUN=41` (UICC on, radio off). `AT%XSIM?` is polled every 250 ms for up to 5 s;
+state 1 means the SIM is initialised. On success the PIN state (`AT+CPIN?`), ICCID (`AT%XICCID`) and
+IMSI (`AT+CIMI`) are printed. Otherwise `AT%XSIM?` and `AT+CPIN?` are printed, the latter with its CME error (10 = SIM not
+inserted, 13 = SIM failure). The modem returns to `CFUN=0` afterwards.
+
+## `lte`: LTE Message
 
 `lte_modem_configure()` (antenna LTE, NTN mode, band lock, APN, `ntn_location_set()` with the Kconfig
 location), `lte_attach_start()`, then poll `lte_link_ready()` until registration and PDN are up,
-the attach timeout passes, or the user aborts. Then the host is resolved (every run), the socket
+the attach timeout passes, or `lte abort` is used. Then the host is resolved (every run), the socket
 opened, and one confirmable CoAP `POST` sent to `api/v1/<token>/telemetry` with
-`{"message":"...","latitude":0.0,"longitude":0.0,"altitude":0.0}`.
+`{"message":"...","latitude":<lat>,"longitude":<lon>,"altitude":<alt>}`, using the same fixed Kconfig
+location that is given to the modem for NTN.
 
 CoAP retransmission timing comes from `CONFIG_APP_COAP_ACK_TIMEOUT_MS` and
 `CONFIG_APP_COAP_MAX_RETRANSMIT`, passed to `coap_client_req()`. The wait for the response is derived
@@ -69,7 +98,19 @@ from the same values (worst-case retransmission sequence + 10 s). Logs never pri
 
 `NTN_EVT_LOCATION_REQUEST` is answered with the same fixed Kconfig location.
 
+## Flash Layout and Debug Access
+
+There is no bootloader. The board devicetree removes the MCUboot and update slots from the default
+nRF91 layout, so TF-M starts at `0x0` and the application at `0x40000` (NCS v3.4 uses devicetree
+partitioning; without this the reset vector would be empty).
+
+The debug port stays open: `CMakeLists.txt` merges `boards/piggysat/uicr_debug_open.hex`
+(`UICR.APPROTECT` / `UICR.SECUREAPPROTECT` = `0x50FA50FA`) into `tfm_merged.hex` after the final link.
+With the default `NRF_APPROTECT_USE_UICR`, the firmware opens both access ports at boot.
+`CONFIG_NRF91_ANOMALY_36_WORKAROUND` (board defconfig, also passed to TF-M) is required: without it the
+access port locks again whenever the CPU sleeps in WFI. Flash with `--erase`, since the image writes UICR.
+
 ## Debug Build
 
-`fatal-debug.conf` disables reset-on-fatal-error and switches logging to immediate mode. Add it with
+`fatal-debug.conf` disables reset-on-fatal-error (the system halts and the fault log stays readable). Add it with
 `west build -b piggysat/nrf9151/ns -- -DBOARD_ROOT=. -DEXTRA_CONF_FILE=fatal-debug.conf`.

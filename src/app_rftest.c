@@ -4,13 +4,14 @@
 
 #include "app_internal.h"
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <nrf_modem_at.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/sys/printk.h>
+#include <zephyr/shell/shell.h>
 
 LOG_MODULE_REGISTER(app_rftest, CONFIG_APP_LOG_LEVEL);
 
@@ -23,20 +24,22 @@ LOG_MODULE_REGISTER(app_rftest, CONFIG_APP_LOG_LEVEL);
 #define XRFTEST_SYSTEM_MODE_NBIOT 0
 #define XRFTEST_MODULATION_CW 4
 
-static void print_at_error(const char *what, int err)
+static bool cw_active;
+
+static void print_at_error(const struct shell *sh, const char *what, int err)
 {
 	if (err > 0)
 	{
-		printk("%s failed: modem error type %d, code %d\n", what,
-			   nrf_modem_at_err_type(err), nrf_modem_at_err(err));
+		shell_error(sh, "cw: %s failed: modem error type %d, code %d", what,
+					nrf_modem_at_err_type(err), nrf_modem_at_err(err));
 	}
 	else
 	{
-		printk("%s failed: %d\n", what, err);
+		shell_error(sh, "cw: %s failed: %d", what, err);
 	}
 }
 
-void test_lte_cw(void)
+int cw_start(const struct shell *sh)
 {
 	char response[64];
 	char measured[16];
@@ -44,29 +47,29 @@ void test_lte_cw(void)
 	int q4_dbm;
 	int err;
 
-	printk("LTE CW TX test: band %d, %d.%d MHz, %d dBm requested.\n"
-		   "WARNING: transmits RF. Use a cabled setup or a shielded room.\n",
-		   CONFIG_APP_CW_BAND, CONFIG_APP_CW_FREQUENCY_100KHZ / 10,
-		   CONFIG_APP_CW_FREQUENCY_100KHZ % 10, CONFIG_APP_CW_POWER_DBM);
+	shell_print(sh, "cw: band %d, %d.%d MHz, %d dBm requested", CONFIG_APP_CW_BAND,
+				CONFIG_APP_CW_FREQUENCY_100KHZ / 10, CONFIG_APP_CW_FREQUENCY_100KHZ % 10,
+				CONFIG_APP_CW_POWER_DBM);
+	shell_warn(sh, "cw: transmits RF. Use a cabled setup or a shielded room.");
 
 	/* %XRFTEST needs the radio off, and the NTN system mode for bands 255/256. */
 	err = modem_enter_min_func();
 	if (err)
 	{
-		return;
+		return err;
 	}
 
 	err = antenna_select(ANTENNA_PATH_LTE);
 	if (err)
 	{
-		return;
+		return err;
 	}
 
 	err = lte_lc_system_mode_set(LTE_LC_SYSTEM_MODE_NTN_NBIOT, LTE_LC_SYSTEM_MODE_PREFER_AUTO);
 	if (err)
 	{
-		printk("Failed to set NTN system mode: %d\n", err);
-		return;
+		shell_error(sh, "cw: failed to set NTN system mode: %d", err);
+		return err;
 	}
 
 	err = nrf_modem_at_cmd(response, sizeof(response),
@@ -76,10 +79,13 @@ void test_lte_cw(void)
 						   XRFTEST_MODULATION_CW);
 	if (err)
 	{
-		print_at_error("AT%XRFTEST TX on", err);
+		print_at_error(sh, "AT%XRFTEST TX on", err);
 		(void)nrf_modem_at_printf("AT%%XRFTEST=1,0");
-		return;
+		(void)modem_enter_min_func();
+		return -EIO;
 	}
+
+	cw_active = true;
 
 	/* Response: "%XRFTEST: <antenna_power>", in q4 dBm (divide by 16). */
 	value = strstr(response, "%XRFTEST:");
@@ -87,27 +93,36 @@ void test_lte_cw(void)
 	{
 		q4_dbm = atoi(value + sizeof("%XRFTEST:") - 1);
 		snprintf(measured, sizeof(measured), "%.1f", (double)q4_dbm / 16.0);
-		printk("Transmitting. Measured power at the antenna port: %s dBm "
-			   "(raw %d q4 dBm, requested %d dBm)\n",
-			   measured, q4_dbm, CONFIG_APP_CW_POWER_DBM);
+		shell_print(sh, "cw: transmitting. Measured power at the antenna port: %s dBm "
+					"(raw %d q4 dBm, requested %d dBm)",
+					measured, q4_dbm, CONFIG_APP_CW_POWER_DBM);
 	}
 	else
 	{
-		printk("Transmitting. Unexpected response: %s\n", response);
+		shell_print(sh, "cw: transmitting. Unexpected response: %s", response);
 	}
 
-	printk("q + Enter to stop.\n");
-	while (!console_key_pressed())
+	shell_print(sh, "cw: 'cw stop' ends the test");
+	return 0;
+}
+
+int cw_stop(const struct shell *sh)
+{
+	int err;
+
+	if (!cw_active)
 	{
-		k_msleep(100);
+		return -EALREADY;
 	}
 
 	err = nrf_modem_at_printf("AT%%XRFTEST=1,0");
 	if (err)
 	{
-		print_at_error("AT%XRFTEST TX off", err);
+		print_at_error(sh, "AT%XRFTEST TX off", err);
 	}
 
+	cw_active = false;
 	(void)modem_enter_min_func();
-	printk("LTE CW TX test stopped\n");
+	shell_print(sh, "cw: stopped, modem offline");
+	return 0;
 }

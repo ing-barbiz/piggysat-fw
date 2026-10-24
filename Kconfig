@@ -98,8 +98,8 @@ config APP_NTN_LATITUDE
 	help
 	  Fixed latitude given to the modem through ntn_location_set() for the
 	  LTE message test. GNSS positions are not stored, so the modem needs a
-	  configured location close to the real one to attach. Defaults to
-	  Padova, Italy.
+	  configured location close to the real one to attach. The same location
+	  is sent in the test message. Defaults to Padova, Italy.
 
 config APP_NTN_LONGITUDE
 	string "NTN longitude in degrees"

@@ -5,10 +5,12 @@
 #include "app_internal.h"
 
 #include <errno.h>
+#include <string.h>
 #include <time.h>
 
 #include <nrf_modem_gnss.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/shell/shell.h>
 #include <zephyr/sys/printk.h>
 
 LOG_MODULE_REGISTER(app_gnss, CONFIG_APP_LOG_LEVEL);
@@ -16,12 +18,14 @@ LOG_MODULE_REGISTER(app_gnss, CONFIG_APP_LOG_LEVEL);
 #define GNSS_NMEA_QUEUE_LEN 16
 
 /* The GNSS event handler runs in interrupt context, so NMEA sentences are
- * queued and printed from the test loop.
+ * queued there and printed to the shell from a work item.
  */
 K_MSGQ_DEFINE(gnss_nmea_q, sizeof(struct nrf_modem_gnss_nmea_data_frame),
 			  GNSS_NMEA_QUEUE_LEN, 4);
 
 static atomic_t gnss_nmea_dropped;
+static const struct shell *gnss_sh;
+static bool gnss_active;
 
 void format_timestamp(char *buffer, size_t buffer_len)
 {
@@ -37,6 +41,31 @@ void format_timestamp(char *buffer, size_t buffer_len)
 	strftime(buffer, buffer_len, "%Y-%m-%dT%H:%M:%S", &tm_utc);
 }
 
+static void gnss_nmea_work_fn(struct k_work *work)
+{
+	struct nrf_modem_gnss_nmea_data_frame nmea;
+	char *end;
+
+	ARG_UNUSED(work);
+
+	while (k_msgq_get(&gnss_nmea_q, &nmea, K_NO_WAIT) == 0)
+	{
+		/* NMEA sentences end with CRLF; the shell adds its own line ending. */
+		end = strpbrk(nmea.nmea_str, "\r\n");
+		if (end != NULL)
+		{
+			*end = '\0';
+		}
+
+		if (gnss_active && gnss_sh != NULL)
+		{
+			shell_print(gnss_sh, "%s", nmea.nmea_str);
+		}
+	}
+}
+
+K_WORK_DEFINE(gnss_nmea_work, gnss_nmea_work_fn);
+
 static void gnss_event_handler(int event)
 {
 	struct nrf_modem_gnss_nmea_data_frame nmea;
@@ -44,11 +73,15 @@ static void gnss_event_handler(int event)
 	switch (event)
 	{
 	case NRF_MODEM_GNSS_EVT_NMEA:
-		if (nrf_modem_gnss_read(&nmea, sizeof(nmea), NRF_MODEM_GNSS_DATA_NMEA) == 0 &&
-			k_msgq_put(&gnss_nmea_q, &nmea, K_NO_WAIT) != 0)
+		if (nrf_modem_gnss_read(&nmea, sizeof(nmea), NRF_MODEM_GNSS_DATA_NMEA) != 0)
+		{
+			break;
+		}
+		if (k_msgq_put(&gnss_nmea_q, &nmea, K_NO_WAIT) != 0)
 		{
 			atomic_inc(&gnss_nmea_dropped);
 		}
+		k_work_submit(&gnss_nmea_work);
 		break;
 	default:
 		break;
@@ -131,7 +164,7 @@ static int gnss_start_continuous(void)
 	return 0;
 }
 
-static void gnss_stop(void)
+static void gnss_shutdown(void)
 {
 	int err = nrf_modem_gnss_stop();
 
@@ -144,32 +177,37 @@ static void gnss_stop(void)
 	(void)modem_enter_min_func();
 }
 
-void test_gnss_nmea(void)
+int gnss_test_start(const struct shell *sh)
 {
-	struct nrf_modem_gnss_nmea_data_frame nmea;
 	int err;
 
-	printk("GNSS mode: continuous reception, NMEA output. Positions are not stored. "
-		   "q + Enter to stop.\n");
+	gnss_sh = sh;
+	gnss_active = true;
+	shell_print(sh, "gnss: continuous reception, NMEA output. Positions are not stored. "
+				"'gnss stop' ends the test.");
 
 	err = gnss_start_continuous();
 	if (err)
 	{
-		printk("GNSS start failed: %d\n", err);
-		gnss_stop();
-		return;
+		gnss_active = false;
+		shell_error(sh, "gnss: start failed: %d", err);
+		gnss_shutdown();
+		return err;
 	}
 
-	while (!console_key_pressed())
+	return 0;
+}
+
+int gnss_test_stop(const struct shell *sh)
+{
+	if (!gnss_active)
 	{
-		if (k_msgq_get(&gnss_nmea_q, &nmea, K_MSEC(100)) == 0)
-		{
-			/* NMEA sentences from the modem already end with CRLF. */
-			printk("%s", nmea.nmea_str);
-		}
+		return -EALREADY;
 	}
 
-	gnss_stop();
-	printk("GNSS mode stopped (%d NMEA sentences dropped)\n",
-		   (int)atomic_get(&gnss_nmea_dropped));
+	gnss_active = false;
+	gnss_shutdown();
+	shell_print(sh, "gnss: stopped (%d NMEA sentences dropped), modem offline",
+				(int)atomic_get(&gnss_nmea_dropped));
+	return 0;
 }

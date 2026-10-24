@@ -15,6 +15,7 @@
 #include <arpa/inet.h>
 
 #include <zephyr/logging/log.h>
+#include <zephyr/shell/shell.h>
 #include <zephyr/sys/printk.h>
 #include <zephyr/net/coap.h>
 #include <zephyr/net/coap_client.h>
@@ -267,22 +268,28 @@ static int resolve_server_address(void)
 	return 0;
 }
 
-/* GNSS positions are not stored, so the test message reports position 0,0. */
 static void format_telemetry_payload(char *buffer, size_t buffer_len)
 {
 	static const char json_prefix[] = "{\"message\":\"";
-	static const char json_suffix[] = "\",\"latitude\":0.0,\"longitude\":0.0,\"altitude\":0.0}";
+	char json_suffix[96];
 	char escaped_message[APP_MESSAGE_STRING_SIZE];
 	size_t max_message_len;
+	int ret;
 
-	if (buffer_len < sizeof(json_prefix) + sizeof(json_suffix))
+	/* GNSS positions are not stored, so the message carries the configured location. */
+	ret = snprintf(json_suffix, sizeof(json_suffix),
+				   "\",\"latitude\":%.6f,\"longitude\":%.6f,\"altitude\":%.1f}",
+				   strtod(CONFIG_APP_NTN_LATITUDE, NULL), strtod(CONFIG_APP_NTN_LONGITUDE, NULL),
+				   strtod(CONFIG_APP_NTN_ALTITUDE_METERS, NULL));
+	if (ret < 0 || (size_t)ret >= sizeof(json_suffix) ||
+		buffer_len < sizeof(json_prefix) + (size_t)ret + 1U)
 	{
 		buffer[0] = '\0';
 		return;
 	}
 
 	format_json_string(CONFIG_APP_TELEMETRY_MESSAGE, escaped_message, sizeof(escaped_message));
-	max_message_len = buffer_len - sizeof(json_prefix) - sizeof(json_suffix) + 1U;
+	max_message_len = buffer_len - sizeof(json_prefix) - (size_t)ret - 1U;
 	snprintk(buffer, buffer_len, "%s%.*s%s",
 			 json_prefix, (int)max_message_len, escaped_message, json_suffix);
 }
@@ -498,14 +505,28 @@ static int socket_connect(void)
 	return 0;
 }
 
-/* Waits for registration + PDN, or until timeout or a key press. */
+/* The LTE message test can wait minutes for the network, so it runs on its own
+ * work queue instead of blocking the shell. Output goes to the shell that
+ * started it.
+ */
+#define LTE_TEST_STACK_SIZE 4096
+#define LTE_TEST_PRIORITY 5
+
+K_THREAD_STACK_DEFINE(lte_test_stack, LTE_TEST_STACK_SIZE);
+static struct k_work_q lte_test_workq;
+static struct k_work lte_test_work;
+static const struct shell *lte_test_sh;
+static atomic_t lte_test_abort;
+static atomic_t lte_test_running;
+
+/* Waits for registration + PDN, or until timeout or abort. */
 static int lte_wait_for_link(void)
 {
 	int64_t deadline = k_uptime_get() + CONFIG_APP_LTE_ATTACH_TIMEOUT_SECONDS * 1000LL;
 
 	while (!lte_link_ready())
 	{
-		if (console_key_pressed())
+		if (atomic_get(&lte_test_abort))
 		{
 			return -ECANCELED;
 		}
@@ -573,15 +594,14 @@ static int coap_post_telemetry(void)
 	return 0;
 }
 
-void test_lte_message(void)
+static void lte_test_work_fn(struct k_work *work)
 {
+	const struct shell *sh = lte_test_sh;
 	unsigned int code_class;
 	unsigned int code_detail;
 	int err;
 
-	printk("LTE message send: NTN attach, one CoAP POST with position 0,0, then detach.\n"
-		   "Attach can take minutes (timeout %d s). q + Enter to abort.\n",
-		   CONFIG_APP_LTE_ATTACH_TIMEOUT_SECONDS);
+	ARG_UNUSED(work);
 
 	/* Resolve the host again on every run. */
 	host_addr_resolved = false;
@@ -593,44 +613,85 @@ void test_lte_message(void)
 	}
 	if (err)
 	{
-		printk("Modem setup failed: %d\n", err);
+		shell_error(sh, "lte: modem setup failed: %d", err);
 		goto out;
 	}
 
 	err = lte_wait_for_link();
 	if (err == -ECANCELED)
 	{
-		printk("Aborted while waiting for the network\n");
+		shell_warn(sh, "lte: aborted while waiting for the network");
 		goto out;
 	}
 	if (err)
 	{
-		printk("No network after %d s\n", CONFIG_APP_LTE_ATTACH_TIMEOUT_SECONDS);
+		shell_error(sh, "lte: no network after %d s", CONFIG_APP_LTE_ATTACH_TIMEOUT_SECONDS);
 		goto out;
 	}
 
-	printk("Network attached, sending message\n");
+	shell_print(sh, "lte: network attached, sending message");
 	err = socket_connect();
 	if (err)
 	{
-		printk("Socket setup failed: %d\n", err);
+		shell_error(sh, "lte: socket setup failed: %d", err);
 		goto out;
 	}
 
 	err = coap_post_telemetry();
 	if (err)
 	{
-		printk("Message send failed: %d\n", err);
+		shell_error(sh, "lte: message send failed: %d", err);
 		goto out;
 	}
 
 	code_class = (uint16_t)coap_response_code >> 5;
 	code_detail = (uint16_t)coap_response_code & 0x1f;
-	printk("Message %s by the server (CoAP %u.%02u)\n",
-		   code_class == 2U ? "accepted" : "rejected", code_class, code_detail);
+	if (code_class == 2U)
+	{
+		shell_print(sh, "lte: message accepted by the server (CoAP %u.%02u)",
+					code_class, code_detail);
+	}
+	else
+	{
+		shell_error(sh, "lte: message rejected by the server (CoAP %u.%02u)",
+					code_class, code_detail);
+	}
 
 out:
 	socket_disconnect();
 	(void)modem_enter_min_func();
-	printk("LTE message test finished, modem offline\n");
+	shell_print(sh, "lte: finished, modem offline");
+	atomic_set(&lte_test_running, 0);
+	modem_test_release();
+}
+
+void lte_message_init(void)
+{
+	k_work_queue_init(&lte_test_workq);
+	k_work_queue_start(&lte_test_workq, lte_test_stack, K_THREAD_STACK_SIZEOF(lte_test_stack),
+					   LTE_TEST_PRIORITY, NULL);
+	k_work_init(&lte_test_work, lte_test_work_fn);
+}
+
+void lte_message_start(const struct shell *sh)
+{
+	lte_test_sh = sh;
+	atomic_set(&lte_test_abort, 0);
+	atomic_set(&lte_test_running, 1);
+
+	shell_print(sh, "lte: NTN attach, one CoAP POST with the configured location, then detach. "
+				"Attach can take minutes (timeout %d s); 'lte abort' cancels.",
+				CONFIG_APP_LTE_ATTACH_TIMEOUT_SECONDS);
+	k_work_submit_to_queue(&lte_test_workq, &lte_test_work);
+}
+
+int lte_message_abort(void)
+{
+	if (!atomic_get(&lte_test_running))
+	{
+		return -EALREADY;
+	}
+
+	atomic_set(&lte_test_abort, 1);
+	return 0;
 }

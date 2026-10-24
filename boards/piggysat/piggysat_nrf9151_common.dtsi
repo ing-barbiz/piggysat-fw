@@ -70,3 +70,24 @@
 
 /* Include default memory partition configuration file */
 #include <nordic/nrf91xx_partition.dtsi>
+
+/*
+ * No bootloader on this board. The default layout reserves 0x0-0x10000 for
+ * MCUboot, and with devicetree partitioning (NCS v3.4+, no Partition Manager)
+ * that would leave the reset vector empty. Drop the MCUboot and update slots
+ * and start image slot 0 at 0x0:
+ *   0x0000_0000 TF-M secure image     (256 KB)
+ *   0x0004_0000 Non-secure application (256 KB)
+ * TF-M storage areas stay at 0xf0000 and above.
+ */
+/delete-node/ &boot_partition;
+/delete-node/ &slot1_partition;
+
+&slot0_partition {
+	reg = <0x00000000 0x80000>;
+	ranges = <0x0 0x0 0x80000>;
+};
+
+&slot0_ns_partition {
+	reg = <0x00040000 0x40000>;
+};

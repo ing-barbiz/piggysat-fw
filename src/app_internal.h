@@ -30,19 +30,30 @@ enum antenna_path
 	ANTENNA_PATH_GNSS,
 };
 
-/* RTT console input (main.c) */
-bool console_key_pressed(void);
-void console_flush_input(void);
+struct shell;
+
+/* Shell commands (app_shell.c) */
+void modem_tests_enable(void);
+void modem_test_release(void);
 
 int antenna_init(void);
 int antenna_select(enum antenna_path path);
 
 int leds_init(void);
-void test_leds(void);
+int leds_test_start(void);
+int leds_test_stop(void);
 
-void test_gnss_nmea(void);
+int button_init(void);
+int button_test_start(const struct shell *sh);
+int button_test_stop(const struct shell *sh);
 
-void test_lte_cw(void);
+int gnss_test_start(const struct shell *sh);
+int gnss_test_stop(const struct shell *sh);
+
+int cw_start(const struct shell *sh);
+int cw_stop(const struct shell *sh);
+
+int sim_test(const struct shell *sh);
 
 int verify_modem_firmware(void);
 void log_modem_identity(void);
@@ -53,7 +64,9 @@ bool lte_link_ready(void);
 void ntn_handler(const struct ntn_evt *const evt);
 
 int coap_client_start(void);
-void test_lte_message(void);
+void lte_message_init(void);
+void lte_message_start(const struct shell *sh);
+int lte_message_abort(void);
 
 void format_timestamp(char *buffer, size_t buffer_len);
 

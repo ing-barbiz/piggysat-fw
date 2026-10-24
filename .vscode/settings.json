@@ -1,8 +1,8 @@
 {
     "terminal.integrated.stickyScroll.enabled": false,
 
-    "zephyr-workbench.westWorkspace": "c:\\ncs\\v3.3.0",
-    "zephyr-workbench.sdk": "c:\\ncs\\toolchains\\936afb6332\\opt\\zephyr-sdk",
+    "zephyr-workbench.westWorkspace": "c:\\ncs\\v3.4.0",
+    "zephyr-workbench.sdk": "c:\\Users\\Marco Barbetta\\opt\\zephyr-sdk",
     "zephyr-workbench.toolchain": "zephyr",
     "zephyr-workbench.env.BOARD_ROOT": [
         "${workspaceFolder}"
@@ -15,6 +15,7 @@
             "board": "piggysat/nrf9151/ns",
             "sysbuild": "true",
             "default-runner": "nrfutil",
+            "custom-args": "--erase",
             "west-flags": [
                 "-DBOARD_ROOT=."
             ]
@@ -25,6 +26,7 @@
             "board": "piggysat/nrf9151/ns",
             "sysbuild": "true",
             "default-runner": "nrfutil",
+            "custom-args": "--erase",
             "west-flags": [
                 "-DBOARD_ROOT=."
             ],

@@ -10,3 +10,7 @@ CONFIG_CONSOLE=y
 CONFIG_UART_CONSOLE=n
 CONFIG_USE_SEGGER_RTT=y
 CONFIG_RTT_CONSOLE=y
+
+# nRF91 anomaly 36: the access port gets locked while the CPU sleeps (WFI/WFE).
+# The workaround (constant latency) keeps the debugger and RTT usable. Also applied to TF-M.
+CONFIG_NRF91_ANOMALY_36_WORKAROUND=y
