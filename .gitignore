@@ -4,3 +4,6 @@
 
 # build
 /build*/
+
+# local secrets
+/secrets.conf

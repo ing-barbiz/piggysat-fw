@@ -1,0 +1,6 @@
+{
+    "terminal.integrated.stickyScroll.enabled": false,
+    "nrf-connect.boardRoots": [
+        "${workspaceFolder}"
+    ]
+}

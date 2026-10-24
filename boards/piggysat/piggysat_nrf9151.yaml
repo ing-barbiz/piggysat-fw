@@ -1,0 +1,12 @@
+identifier: piggysat/nrf9151
+name: PiggySat-NRF9151
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+ram: 88
+flash: 1024
+supported:
+  - gpio
+  - watchdog
+sysbuild: true

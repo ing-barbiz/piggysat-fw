@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  PiggySat external antenna selection switch, connected through the J3 header.
+  The header supplies 3Vcc and GND to the switch and drives its control line
+  from a GPIO output. Inactive (low) routes the antenna to LTE, active (high)
+  routes it to GNSS.
+
+compatible: "piggysat,antenna-switch"
+
+properties:
+  gpios:
+    type: phandle-array
+    required: true
+    description: GPIO driving the switch control line.

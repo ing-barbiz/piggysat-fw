@@ -1,0 +1,72 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * PiggySat board (nRF9151 LACA). Pad numbers refer to the nRF9151 LGA package.
+ *
+ * Not available on this board: UART, I2C, SPI, external flash, MAGPIO/COEX
+ * (no external LNA control). Logs go over RTT through the TC2030 SWD connector.
+ */
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+
+/ {
+	model = "PiggySat nRF9151";
+	compatible = "piggysat,piggysat-nrf9151";
+
+	/* LEDs are tied to 3Vcc through a resistor and sunk by the GPIO. */
+	leds {
+		compatible = "gpio-leds";
+
+		led_green: led_0 {
+			gpios = <&gpio0 29 GPIO_ACTIVE_LOW>;	/* pad 48, D3, R8 470R */
+			label = "Green LED";
+		};
+
+		led_orange: led_1 {
+			gpios = <&gpio0 28 GPIO_ACTIVE_LOW>;	/* pad 47, D1, R1 4k7 */
+			label = "Orange LED";
+		};
+
+		led_red: led_2 {
+			gpios = <&gpio0 27 GPIO_ACTIVE_LOW>;	/* pad 45, D2, R4 4k7 */
+			label = "Red LED";
+		};
+	};
+
+	buttons {
+		compatible = "gpio-keys";
+
+		/* TTP223 push-pull output, AHLB=GND (active high), TOG=GND (direct mode). */
+		touch_button: button_0 {
+			gpios = <&gpio0 19 GPIO_ACTIVE_HIGH>;	/* pad 80, U3 + S1 */
+			label = "Touch button";
+			zephyr,code = <INPUT_KEY_0>;
+		};
+	};
+
+	/* J3 header (3Vcc / SW / GND) powers the external antenna selection switch
+	 * and drives its control line: low = LTE, high (active) = GNSS.
+	 */
+	antenna_switch: antenna-switch {
+		compatible = "piggysat,antenna-switch";
+		gpios = <&gpio0 25 GPIO_ACTIVE_HIGH>;	/* pad 12 */
+	};
+
+	aliases {
+		led0 = &led_green;
+		led1 = &led_orange;
+		led2 = &led_red;
+		sw0 = &touch_button;
+		watchdog0 = &wdt0;
+	};
+};
+
+&gpiote {
+	status = "okay";
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+/* Include default memory partition configuration file */
+#include <nordic/nrf91xx_partition.dtsi>

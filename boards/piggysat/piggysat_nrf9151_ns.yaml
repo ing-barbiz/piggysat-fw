@@ -1,0 +1,13 @@
+identifier: piggysat/nrf9151/ns
+name: PiggySat-NRF9151-Non-Secure
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+ram: 128
+flash: 192
+supported:
+  - gpio
+  - watchdog
+  - netif:modem
+sysbuild: true

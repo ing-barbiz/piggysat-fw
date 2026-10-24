@@ -1,0 +1,7 @@
+board:
+  name: piggysat
+  full_name: PiggySat
+  socs:
+  - name: nrf9151
+    variants:
+    - name: 'ns'

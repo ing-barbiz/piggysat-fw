@@ -1,0 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
+
+config BOARD_PIGGYSAT
+	select SOC_NRF9151_LACA
