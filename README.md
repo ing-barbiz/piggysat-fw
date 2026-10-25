@@ -1,5 +1,28 @@
 # piggy_sat
 
+PiggySat is an **open source satellite communicator**: open hardware and open firmware that send
+short messages with a position directly over satellite, without terrestrial coverage.
+
+To the best of our knowledge, PiggySat is the **world's first open source satellite communicator
+based on NB-IoT NTN**.
+
+It is built on **NB-IoT NTN** (3GPP Release 17), the satellite extension of the cellular IoT
+standard, instead of a proprietary satellite network. The radio is a standard cellular IoT SiP
+(Nordic nRF9151) running NTN modem firmware, and connectivity comes from NTN operators with
+IoT-style data plans. Communicators based on proprietary systems such as Iridium need a dedicated
+satellite modem and per-message airtime, which makes them considerably more expensive to build and
+to run.
+
+> **Not an emergency beacon.** PiggySat is not a certified COSPAS-SARSAT PLB/EPIRB and does not
+> alert rescue services: messages go to a server you configure (ThingsBoard). Do not rely on it as
+> your only means of calling for help.
+
+**Project status:** the firmware in this repository is currently a **hardware test tool** for the
+PiggySat board. The communicator application (SOS message on button press, delivery confirmation,
+battery management) is not implemented yet.
+
+## Test tool
+
 Hardware test tool for the PiggySat board (nRF9151, NB-IoT NTN). The tests are Zephyr shell
 commands over RTT (TC2030 SWD cable). Use a VT100 terminal for the shell: `west rtt`,
 `JLinkRTTClient`, or a telnet client on `localhost:19021` while a J-Link session is open.
