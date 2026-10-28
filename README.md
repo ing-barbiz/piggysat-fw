@@ -57,6 +57,20 @@ ends.
 At boot the tool checks that the modem runs `mfw_nrf9151-ntn` and logs the modem model and hardware
 version. If the modem check fails, only `led` and `button` are available.
 
+### GNSS plotter
+
+[tools/gnss_plotter.py](tools/gnss_plotter.py) connects to the board through the J-Link (pylink),
+sends `gnss start` over RTT and plots the NMEA output live: C/N0 per satellite (green = used in the
+fix), a sky plot, satellites tracked/used and C/N0 over time, and the fix data (UTC, position,
+altitude, HDOP/PDOP/VDOP, speed, course). Closing the window sends `gnss stop`.
+
+```sh
+pip install -r tools/requirements.txt
+python tools/gnss_plotter.py            # --serial <J-Link SN>, --log nmea.txt, --echo
+```
+
+Close J-Link RTT Viewer and any other RTT client first; two RTT readers steal each other's data.
+
 **CW test warning:** `cw start` transmits RF. Use a cabled setup or a shielded room.
 
 See [CODE_NOTES.md](CODE_NOTES.md) for how the code is organised.

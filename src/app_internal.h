@@ -67,6 +67,7 @@ int coap_client_start(void);
 void lte_message_init(void);
 void lte_message_start(const struct shell *sh);
 int lte_message_abort(void);
+int lte_info_print(const struct shell *sh);
 
 void format_timestamp(char *buffer, size_t buffer_len);
 

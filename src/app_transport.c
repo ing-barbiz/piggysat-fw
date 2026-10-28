@@ -597,6 +597,7 @@ static int coap_post_telemetry(void)
 static void lte_test_work_fn(struct k_work *work)
 {
 	const struct shell *sh = lte_test_sh;
+	int64_t start = k_uptime_get();
 	unsigned int code_class;
 	unsigned int code_detail;
 	int err;
@@ -617,6 +618,7 @@ static void lte_test_work_fn(struct k_work *work)
 		goto out;
 	}
 
+	shell_print(sh, "lte: waiting for the network...");
 	err = lte_wait_for_link();
 	if (err == -ECANCELED)
 	{
@@ -629,7 +631,9 @@ static void lte_test_work_fn(struct k_work *work)
 		goto out;
 	}
 
-	shell_print(sh, "lte: network attached, sending message");
+	shell_print(sh, "lte: network attached after %lld s", (k_uptime_get() - start) / 1000);
+	(void)lte_info_print(sh);
+	shell_print(sh, "lte: resolving the server...");
 	err = socket_connect();
 	if (err)
 	{
@@ -637,6 +641,7 @@ static void lte_test_work_fn(struct k_work *work)
 		goto out;
 	}
 
+	shell_print(sh, "lte: sending the message, waiting for the server response...");
 	err = coap_post_telemetry();
 	if (err)
 	{
@@ -659,8 +664,10 @@ static void lte_test_work_fn(struct k_work *work)
 
 out:
 	socket_disconnect();
+	/* CFUN=0 detaches from the network first; over NTN this takes tens of seconds. */
+	shell_print(sh, "lte: detaching from the network (can take up to a minute)...");
 	(void)modem_enter_min_func();
-	shell_print(sh, "lte: finished, modem offline");
+	shell_print(sh, "lte: finished after %lld s, modem offline", (k_uptime_get() - start) / 1000);
 	atomic_set(&lte_test_running, 0);
 	modem_test_release();
 }
