@@ -2,14 +2,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "app_internal.h"
+#include "app.h"
 
 #include <errno.h>
 
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/logging/log.h>
 
-LOG_MODULE_REGISTER(app_antenna, CONFIG_APP_LOG_LEVEL);
+LOG_MODULE_REGISTER(antenna, CONFIG_APP_LOG_LEVEL);
 
 /* J3 antenna selection switch: low = LTE, high = GNSS. */
 static const struct gpio_dt_spec antenna_switch =

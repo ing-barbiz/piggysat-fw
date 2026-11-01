@@ -16,19 +16,19 @@
 	leds {
 		compatible = "gpio-leds";
 
-		led_green: led_0 {
+		gnss_led: led_0 {
 			gpios = <&gpio0 29 GPIO_ACTIVE_LOW>;	/* pad 48, D3, R8 470R */
-			label = "Green LED";
+			label = "GNSS LED (green)";
 		};
 
-		led_orange: led_1 {
+		lte_led: led_1 {
 			gpios = <&gpio0 28 GPIO_ACTIVE_LOW>;	/* pad 47, D1, R1 4k7 */
-			label = "Orange LED";
+			label = "LTE LED (orange)";
 		};
 
-		led_red: led_2 {
+		sent_led: led_2 {
 			gpios = <&gpio0 27 GPIO_ACTIVE_LOW>;	/* pad 45, D2, R4 4k7 */
-			label = "Red LED";
+			label = "Sent LED (red)";
 		};
 	};
 
@@ -52,9 +52,9 @@
 	};
 
 	aliases {
-		led0 = &led_green;
-		led1 = &led_orange;
-		led2 = &led_red;
+		led0 = &gnss_led;
+		led1 = &lte_led;
+		led2 = &sent_led;
 		sw0 = &touch_button;
 		watchdog0 = &wdt0;
 	};

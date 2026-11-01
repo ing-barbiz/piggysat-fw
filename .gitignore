@@ -2,11 +2,14 @@
 *.swp
 *~
 
-# build
-/build*/
+# build (in any app folder)
+build*/
 
 # local secrets
 /secrets.conf
 
 # python
 __pycache__/
+
+# local VS Code settings at the root (apps keep theirs in <app>/.vscode)
+/.vscode/

@@ -1,0 +1,19 @@
+{
+    "folders": [
+        {
+            "name": "piggysat",
+            "path": "piggysat"
+        },
+        {
+            "name": "piggysat-test",
+            "path": "piggysat-test"
+        },
+        {
+            "name": "repository root",
+            "path": "."
+        }
+    ],
+    "settings": {
+        "terminal.integrated.stickyScroll.enabled": false
+    }
+}

@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "app_internal.h"
+#include "app.h"
 
 #include <errno.h>
 #include <stdlib.h>
@@ -12,7 +12,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/shell/shell.h>
 
-LOG_MODULE_REGISTER(app_simtest, CONFIG_APP_LOG_LEVEL);
+LOG_MODULE_REGISTER(simtest, CONFIG_APP_LOG_LEVEL);
 
 #define SIM_INIT_TIMEOUT_MS 5000
 #define SIM_POLL_MS 250

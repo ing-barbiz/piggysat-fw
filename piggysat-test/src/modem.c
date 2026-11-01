@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
-#include "app_internal.h"
+#include "app.h"
 
 #include <errno.h>
 #include <stdbool.h>
@@ -17,7 +17,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/shell/shell.h>
 
-LOG_MODULE_REGISTER(app_modem, CONFIG_APP_LOG_LEVEL);
+LOG_MODULE_REGISTER(modem, CONFIG_APP_LOG_LEVEL);
 
 static bool lte_connected;
 static bool lte_pdn_active;

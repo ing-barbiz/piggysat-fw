@@ -1,11 +1,9 @@
 {
-    "terminal.integrated.stickyScroll.enabled": false,
-
     "zephyr-workbench.westWorkspace": "c:\\ncs\\v3.4.0",
     "zephyr-workbench.sdk": "c:\\Users\\Marco Barbetta\\opt\\zephyr-sdk",
     "zephyr-workbench.toolchain": "zephyr",
     "zephyr-workbench.env.BOARD_ROOT": [
-        "${workspaceFolder}"
+        "${workspaceFolder}/.."
     ],
     "zephyr-workbench.build.active": 0,
     "zephyr-workbench.build.configurations": [
@@ -17,7 +15,7 @@
             "default-runner": "nrfutil",
             "custom-args": "--erase",
             "west-flags": [
-                "-DBOARD_ROOT=."
+                "-DBOARD_ROOT=.."
             ]
         },
         {
@@ -28,7 +26,7 @@
             "default-runner": "nrfutil",
             "custom-args": "--erase",
             "west-flags": [
-                "-DBOARD_ROOT=."
+                "-DBOARD_ROOT=.."
             ],
             "env.EXTRA_CONF_FILE": [
                 "fatal-debug.conf"

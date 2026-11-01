@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "app_internal.h"
+#include "app.h"
 
 #include <errno.h>
 
@@ -10,7 +10,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/util.h>
 
-LOG_MODULE_REGISTER(app_leds, CONFIG_APP_LOG_LEVEL);
+LOG_MODULE_REGISTER(leds, CONFIG_APP_LOG_LEVEL);
 
 #define LED_STEP_MS 500
 
@@ -20,7 +20,7 @@ static const struct gpio_dt_spec leds[] = {
 	GPIO_DT_SPEC_GET(DT_ALIAS(led2), gpios),
 };
 
-static const char *const led_names[] = {"green", "orange", "red"};
+static const char *const led_names[] = {"gnss (green)", "lte (orange)", "sent (red)"};
 
 static struct k_work_delayable led_test_work;
 static size_t led_test_step;
@@ -34,7 +34,7 @@ static void leds_set_all(int value)
 	}
 }
 
-/* Steps through green, orange, red one at a time, then all on. */
+/* Steps through gnss, lte, sent one at a time, then all on. */
 static void led_test_work_fn(struct k_work *work)
 {
 	ARG_UNUSED(work);

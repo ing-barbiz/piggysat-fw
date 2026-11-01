@@ -1,0 +1,102 @@
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+menu "piggysat"
+
+config APP_REPORT_INTERVAL_SECONDS
+	int "Report interval in seconds"
+	default 300
+	range 60 86400
+	help
+	  Time between the start of two report cycles. If a cycle takes longer,
+	  the next one starts immediately.
+
+config APP_GNSS_FIX_TIMEOUT_SECONDS
+	int "GNSS fix timeout in seconds"
+	default 180
+	range 10 3600
+	help
+	  Maximum time spent acquiring a fix in each cycle. Without a fix the
+	  cycle is aborted: no connection and no message.
+
+config APP_LTE_ATTACH_TIMEOUT_SECONDS
+	int "NTN attach timeout in seconds"
+	default 600
+	range 10 3600
+
+config APP_SENT_LED_ON_SECONDS
+	int "Sent LED on-time in seconds"
+	default 30
+
+config APP_LED_BLINK_MS
+	int "LED blink half period in milliseconds"
+	default 250
+
+menu "ThingsBoard"
+
+config APP_TELEMETRY_MESSAGE
+	string "Text in the message field"
+	default "piggysat"
+
+config APP_THINGSBOARD_HOST
+	string "ThingsBoard host name or IP address"
+	default "coap.thingsboard.cloud"
+
+config APP_THINGSBOARD_IPV4
+	string "ThingsBoard IPv4 address override"
+	default ""
+	help
+	  Optional numeric IPv4 address that skips DNS resolution.
+
+config APP_THINGSBOARD_PORT
+	int "ThingsBoard CoAP port"
+	default 5683
+
+config APP_THINGSBOARD_ACCESS_TOKEN
+	string "ThingsBoard device access token"
+	default ""
+	help
+	  Set it in secrets.conf at the repository root (git-ignored).
+
+config APP_COAP_ACK_TIMEOUT_MS
+	int "CoAP initial ACK timeout in milliseconds"
+	default 8000
+	range 1000 100000
+
+config APP_COAP_MAX_RETRANSMIT
+	int "CoAP maximum retransmissions"
+	default 2
+	range 0 10
+
+endmenu
+
+menu "Modem and NTN"
+
+config APP_APN
+	string "APN for PDP context 0"
+	default ""
+
+config APP_MODEM_FW_EXPECTED
+	string "Required modem firmware token"
+	default "mfw_nrf9151-ntn"
+
+config APP_BAND_LOCK_LIST
+	string "NTN band lock list"
+	default "255,256"
+
+config APP_NTN_LOCATION_VALIDITY_SECONDS
+	int "NTN location validity in seconds"
+	default 43200
+
+endmenu
+
+endmenu
+
+module = APP
+module-str = piggysat
+source "$(ZEPHYR_BASE)/subsys/logging/Kconfig.template.log_config"
+
+menu "Zephyr Kernel"
+source "Kconfig.zephyr"
+endmenu

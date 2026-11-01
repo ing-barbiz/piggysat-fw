@@ -1,0 +1,22 @@
+{
+    "zephyr-workbench.westWorkspace": "c:\ncs\v3.4.0",
+    "zephyr-workbench.sdk": "c:\Users\Marco Barbetta\opt\zephyr-sdk",
+    "zephyr-workbench.toolchain": "zephyr",
+    "zephyr-workbench.env.BOARD_ROOT": [
+        "${workspaceFolder}/.."
+    ],
+    "zephyr-workbench.build.active": 0,
+    "zephyr-workbench.build.configurations": [
+        {
+            "name": "piggysat",
+            "active": "true",
+            "board": "piggysat/nrf9151/ns",
+            "sysbuild": "true",
+            "default-runner": "nrfutil",
+            "custom-args": "--erase",
+            "west-flags": [
+                "-DBOARD_ROOT=.."
+            ]
+        }
+    ]
+}

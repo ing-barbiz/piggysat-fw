@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
-#include "app_internal.h"
+#include "app.h"
 
 #include <errno.h>
 #include <stdio.h>
@@ -20,7 +20,7 @@
 #include <zephyr/net/coap.h>
 #include <zephyr/net/coap_client.h>
 
-LOG_MODULE_REGISTER(app_transport, CONFIG_APP_LOG_LEVEL);
+LOG_MODULE_REGISTER(transport, CONFIG_APP_LOG_LEVEL);
 
 /* Extra wait on top of the CoAP retransmission sequence before the app gives up. */
 #define COAP_RESPONSE_SLACK_MS 10000U

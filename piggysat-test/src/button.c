@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "app_internal.h"
+#include "app.h"
 
 #include <errno.h>
 
@@ -10,7 +10,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/shell/shell.h>
 
-LOG_MODULE_REGISTER(app_button, CONFIG_APP_LOG_LEVEL);
+LOG_MODULE_REGISTER(button, CONFIG_APP_LOG_LEVEL);
 
 /* Touch button: TTP223 push-pull output, active high (sw0 in the board devicetree). */
 static const struct gpio_dt_spec button = GPIO_DT_SPEC_GET(DT_ALIAS(sw0), gpios);

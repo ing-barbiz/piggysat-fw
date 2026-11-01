@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "app_internal.h"
+#include "app.h"
 
 #include <errno.h>
 #include <string.h>
@@ -13,7 +13,7 @@
 #include <zephyr/shell/shell.h>
 #include <zephyr/sys/printk.h>
 
-LOG_MODULE_REGISTER(app_gnss, CONFIG_APP_LOG_LEVEL);
+LOG_MODULE_REGISTER(gnss, CONFIG_APP_LOG_LEVEL);
 
 #define GNSS_NMEA_QUEUE_LEN 16
 

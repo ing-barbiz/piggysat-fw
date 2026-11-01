@@ -2,8 +2,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef APP_INTERNAL_H_
-#define APP_INTERNAL_H_
+#ifndef APP_H_
+#define APP_H_
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -32,7 +32,7 @@ enum antenna_path
 
 struct shell;
 
-/* Shell commands (app_shell.c) */
+/* Shell commands (shell.c) */
 void modem_tests_enable(void);
 void modem_test_release(void);
 

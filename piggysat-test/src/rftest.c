@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "app_internal.h"
+#include "app.h"
 
 #include <errno.h>
 #include <stdio.h>
@@ -13,7 +13,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/shell/shell.h>
 
-LOG_MODULE_REGISTER(app_rftest, CONFIG_APP_LOG_LEVEL);
+LOG_MODULE_REGISTER(rftest, CONFIG_APP_LOG_LEVEL);
 
 /* AT%XRFTEST TX parameters (nRF91x1 production test AT commands, TX test):
  * <test>=1 (TX), <operation>=1 (ON), band, frequency (100 kHz), power (dBm),

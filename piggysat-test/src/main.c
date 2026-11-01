@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
-#include "app_internal.h"
+#include "app.h"
 
 #include <zephyr/drivers/hwinfo.h>
 #include <zephyr/logging/log.h>
@@ -13,7 +13,7 @@
 #include <modem/nrf_modem_lib.h>
 #include <modem/ntn.h>
 
-LOG_MODULE_REGISTER(app_main, CONFIG_APP_LOG_LEVEL);
+LOG_MODULE_REGISTER(main, CONFIG_APP_LOG_LEVEL);
 
 static void log_reset_cause_flags(const char *label, uint32_t flags)
 {
@@ -154,7 +154,7 @@ static bool modem_init(void)
 	return true;
 }
 
-/* Board and modem init only; the tests are shell commands (see app_shell.c). */
+/* Board and modem init only; the tests are shell commands (see shell.c). */
 int main(void)
 {
 	LOG_INF("PiggySat test tool started");

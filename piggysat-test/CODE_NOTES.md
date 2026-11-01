@@ -1,24 +1,24 @@
 # Code Notes
 
 The application is a hardware test tool for the PiggySat board. `main()` initialises the board and
-the modem and returns; the tests are Zephyr shell commands over RTT (`src/app_shell.c`). Continuous
+the modem and returns; the tests are Zephyr shell commands over RTT (`src/shell.c`). Continuous
 tests are `start`/`stop` pairs so the shell stays responsive, and every modem test leaves the modem
 offline (`CFUN=0`) when it ends.
 
 ## Source Layout
 
 - `src/main.c`: reset-cause logging, board and modem init
-- `src/app_shell.c`: shell commands `led`, `button`, `cw`, `gnss`, `lte`, `sim`, and the modem lock
-- `src/app_leds.c`: LED init and the background LED cycle
-- `src/app_button.c`: `button`, touch button press/release reporting
-- `src/app_rftest.c`: `cw`, LTE CW TX with `AT%XRFTEST`
-- `src/app_gnss.c`: `gnss`, continuous GNSS with NMEA output; also `format_timestamp()`
-- `src/app_simtest.c`: `sim`, SIM card presence check
-- `src/app_transport.c`: `lte`, DNS resolution, CoAP client and the one-shot telemetry `POST`
-- `src/app_modem.c`: modem firmware check, identity logging, NTN setup with the fixed Kconfig location,
+- `src/shell.c`: shell commands `led`, `button`, `cw`, `gnss`, `lte`, `sim`, and the modem lock
+- `src/leds.c`: LED init and the background LED cycle
+- `src/button.c`: `button`, touch button press/release reporting
+- `src/rftest.c`: `cw`, LTE CW TX with `AT%XRFTEST`
+- `src/gnss.c`: `gnss`, continuous GNSS with NMEA output; also `format_timestamp()`
+- `src/simtest.c`: `sim`, SIM card presence check
+- `src/transport.c`: `lte`, DNS resolution, CoAP client and the one-shot telemetry `POST`
+- `src/modem.c`: modem firmware check, identity logging, NTN setup with the fixed Kconfig location,
   LTE event handling and link state
-- `src/app_antenna.c`: J3 antenna selection switch (low = LTE, high = GNSS)
-- `src/app_internal.h`: shared constants and the cross-module API
+- `src/antenna.c`: J3 antenna selection switch (low = LTE, high = GNSS)
+- `src/app.h`: shared constants and the cross-module API
 
 ## Boot
 
