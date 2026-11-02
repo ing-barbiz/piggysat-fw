@@ -7,6 +7,7 @@
 #include "app.h"
 
 #include <zephyr/drivers/hwinfo.h>
+#include <app_version.h>
 #include <zephyr/logging/log.h>
 
 #include <modem/modem_info.h>
@@ -157,7 +158,7 @@ static bool modem_init(void)
 /* Board and modem init only; the tests are shell commands (see shell.c). */
 int main(void)
 {
-	LOG_INF("PiggySat test tool started");
+	LOG_INF("PiggySat test tool v%s started", APP_VERSION_STRING);
 	log_reset_cause();
 
 	(void)antenna_init();

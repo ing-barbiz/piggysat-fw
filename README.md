@@ -1,7 +1,16 @@
 # PiggySat
 
+<img src="Logo/piggysat.png" alt="PiggySat logo" width="180">
+
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+![Version: v1.0.0](https://img.shields.io/badge/version-v1.0.0-brightgreen.svg)
+![nRF Connect SDK: v3.4.0](https://img.shields.io/badge/nRF%20Connect%20SDK-v3.4.0-00a9ce.svg)
+[![Hardware: ing-barbiz/piggysat](https://img.shields.io/badge/hardware-ing--barbiz%2Fpiggysat-lightgrey.svg)](https://github.com/ing-barbiz/piggysat)
+
 PiggySat is an **open source satellite communicator**: open hardware and open firmware that send
-short messages with a position directly over satellite, without terrestrial coverage.
+short messages with a position directly over satellite, without terrestrial coverage. This
+repository holds the firmware; the hardware (schematics, PCB, enclosure) is in
+[ing-barbiz/piggysat](https://github.com/ing-barbiz/piggysat).
 
 To the best of our knowledge, PiggySat is the **world's first open source satellite communicator
 based on NB-IoT NTN**.
@@ -131,6 +140,9 @@ Nordic Semiconductor's nRF Connect SDK UDP sample. Each file states its licence 
 |---|---|
 | `Apache-2.0` | `boards/` (adapted from Zephyr's nRF9151 DK board), `piggysat/` except `modem.c` and `transport.c`, `piggysat-test/src/antenna.c`, `button.c`, `gnss.c`, `leds.c`, `rftest.c`, `simtest.c`, `shell.c`, `app.h`, `piggysat-test/tools/`, documentation |
 | `LicenseRef-Nordic-5-Clause` | `piggysat/src/modem.c`, `piggysat/src/transport.c`, `piggysat-test/src/main.c`, `modem.c`, `transport.c`, `piggysat-test/CMakeLists.txt`, `Kconfig`, `prj.conf` (derived from the Nordic UDP sample) |
+
+The project logo in [Logo/](Logo/) is the PiggySat artwork from the
+[hardware repository](https://github.com/ing-barbiz/piggysat) and follows its licence.
 
 The Nordic licence only permits use with Nordic Semiconductor integrated circuits. The built firmware
 also links Nordic's closed-source modem library (`nrf_modem`) and other nRF Connect SDK components

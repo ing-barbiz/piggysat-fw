@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <app_version.h>
 #include <zephyr/logging/log.h>
 
 LOG_MODULE_REGISTER(main, CONFIG_APP_LOG_LEVEL);
@@ -134,7 +135,8 @@ int main(void)
 	unsigned int cycle = 0;
 	int err;
 
-	LOG_INF("PiggySat started: report every %d s", CONFIG_APP_REPORT_INTERVAL_SECONDS);
+	LOG_INF("PiggySat v%s started: report every %d s", APP_VERSION_STRING,
+			CONFIG_APP_REPORT_INTERVAL_SECONDS);
 
 	err = antenna_init();
 	if (!err)
