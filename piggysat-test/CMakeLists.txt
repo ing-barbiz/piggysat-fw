@@ -24,7 +24,7 @@ target_sources(app PRIVATE
 	src/main.c
 	src/antenna.c
 	src/leds.c
-	src/button.c
+	src/magnet.c
 	src/gnss.c
 	src/rftest.c
 	src/simtest.c

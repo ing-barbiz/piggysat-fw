@@ -26,16 +26,16 @@ to run.
 > alert rescue services: messages go to a server you configure (ThingsBoard). Do not rely on it as
 > your only means of calling for help.
 
-**Project status:** the communicator firmware currently reports the GNSS position periodically.
-SOS on button press, delivery confirmation to the user and battery management are not implemented
+**Project status:** the communicator firmware currently reports the GNSS position periodically and
+stops while a magnet is on the sensor. SOS messages, delivery confirmation to the user and battery management are not implemented
 yet.
 
 ## Repository layout
 
 | Folder | Content |
 |---|---|
-| [piggysat/](piggysat/) | Communicator firmware: every 5 minutes a GNSS fix, then the position over NTN to ThingsBoard |
-| [piggysat-test/](piggysat-test/) | Hardware test tool: LED, button, CW TX, GNSS, SIM and LTE message tests as shell commands over RTT |
+| [piggysat/](piggysat/) | Communicator firmware: every 5 minutes a GNSS fix, then the position over NTN to ThingsBoard; a magnet puts it in standby |
+| [piggysat-test/](piggysat-test/) | Hardware test tool: LED, magnet sensor, CW TX, GNSS, SIM and LTE message tests as shell commands over RTT |
 | [boards/piggysat/](boards/piggysat/) | Zephyr board definition shared by both apps |
 | `secrets.conf` | ThingsBoard access token, git-ignored, shared by both apps (see [secrets.conf.example](secrets.conf.example)) |
 
@@ -110,7 +110,7 @@ nRF91 layout, so TF-M starts at `0x0` and the application at `0x40000`.
 | GNSS LED, green (D3) | 48 | P0.29 | `led0` / `gnss_led` | active low |
 | LTE LED, orange (D1) | 47 | P0.28 | `led1` / `lte_led` | active low |
 | Sent LED, red (D2) | 45 | P0.27 | `led2` / `sent_led` | active low |
-| Touch button (TTP223) | 80 | P0.19 | `sw0` / `touch_button` | active high |
+| Magnet sensor (U3 output) | 80 | P0.19 | `sw0` / `magnet_sensor` | active low = magnet present |
 | Antenna selection switch (J3) | 12 | P0.25 | `antenna_switch` (`piggysat,antenna-switch`) | output: low = LTE, high = GNSS |
 
 ## Troubleshooting
@@ -138,7 +138,7 @@ Nordic Semiconductor's nRF Connect SDK UDP sample. Each file states its licence 
 
 | Licence | Files |
 |---|---|
-| `Apache-2.0` | `boards/` (adapted from Zephyr's nRF9151 DK board), `piggysat/` except `modem.c` and `transport.c`, `piggysat-test/src/antenna.c`, `button.c`, `gnss.c`, `leds.c`, `rftest.c`, `simtest.c`, `shell.c`, `app.h`, `piggysat-test/tools/`, documentation |
+| `Apache-2.0` | `boards/` (adapted from Zephyr's nRF9151 DK board), `piggysat/` except `modem.c` and `transport.c`, `piggysat-test/src/antenna.c`, `magnet.c`, `gnss.c`, `leds.c`, `rftest.c`, `simtest.c`, `shell.c`, `app.h`, `piggysat-test/tools/`, documentation |
 | `LicenseRef-Nordic-5-Clause` | `piggysat/src/modem.c`, `piggysat/src/transport.c`, `piggysat-test/src/main.c`, `modem.c`, `transport.c`, `piggysat-test/CMakeLists.txt`, `Kconfig`, `prj.conf` (derived from the Nordic UDP sample) |
 
 The project logo in [Logo/](Logo/) is the PiggySat artwork from the

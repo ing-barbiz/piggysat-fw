@@ -8,9 +8,9 @@ offline (`CFUN=0`) when it ends.
 ## Source Layout
 
 - `src/main.c`: reset-cause logging, board and modem init
-- `src/shell.c`: shell commands `led`, `button`, `cw`, `gnss`, `lte`, `sim`, and the modem lock
+- `src/shell.c`: shell commands `led`, `magnet`, `cw`, `gnss`, `lte`, `sim`, and the modem lock
 - `src/leds.c`: LED init and the background LED cycle
-- `src/button.c`: `button`, touch button press/release reporting
+- `src/magnet.c`: `magnet`, magnet sensor detection/removal reporting
 - `src/rftest.c`: `cw`, LTE CW TX with `AT%XRFTEST`
 - `src/gnss.c`: `gnss`, continuous GNSS with NMEA output; also `format_timestamp()`
 - `src/simtest.c`: `sim`, SIM card presence check
@@ -27,7 +27,7 @@ offline (`CFUN=0`) when it ends.
 3. initialise the modem library, check `AT+CGMR` against `CONFIG_APP_MODEM_FW_EXPECTED`, log
    `AT+CGMM` and `%HWVERSION`, start the CoAP client
 
-If any modem step fails, only `led` and `button` are accepted.
+If any modem step fails, only `led` and `magnet` are accepted.
 
 ## Shell
 
@@ -41,7 +41,7 @@ reset-on-fatal-error.
 Shell commands run in the shell thread, so nothing may block there for long:
 
 - `led`: a delayable work item steps the LEDs every 500 ms
-- `button`: a both-edges GPIO interrupt submits a work item that reads the pin and prints state
+- `magnet`: a both-edges GPIO interrupt submits a work item that reads the pin and prints state
   changes
 - `cw`: start configures the modem and turns `%XRFTEST` on; stop turns it off
 - `gnss`: the GNSS event handler (interrupt context) queues NMEA sentences and submits a work item

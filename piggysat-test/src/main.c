@@ -163,17 +163,17 @@ int main(void)
 
 	(void)antenna_init();
 	(void)leds_init();
-	(void)button_init();
+	(void)magnet_init();
 	lte_message_init();
 
 	if (modem_init())
 	{
 		modem_tests_enable();
-		LOG_INF("Ready. Commands: led, button, cw, gnss, lte, sim (type 'help')");
+		LOG_INF("Ready. Commands: led, magnet, cw, gnss, lte, sim (type 'help')");
 	}
 	else
 	{
-		LOG_ERR("Modem not available: only 'led' and 'button' can run");
+		LOG_ERR("Modem not available: only 'led' and 'magnet' can run");
 	}
 
 	return 0;

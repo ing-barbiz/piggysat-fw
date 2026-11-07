@@ -86,39 +86,39 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_led,
 	SHELL_SUBCMD_SET_END);
 SHELL_CMD_REGISTER(led, &sub_led, "LED test", NULL);
 
-/* button */
+/* magnet */
 
-static int cmd_button_start(const struct shell *sh, size_t argc, char **argv)
+static int cmd_magnet_start(const struct shell *sh, size_t argc, char **argv)
 {
 	ARG_UNUSED(argc);
 	ARG_UNUSED(argv);
 
-	if (button_test_start(sh) == -EALREADY)
+	if (magnet_test_start(sh) == -EALREADY)
 	{
-		shell_warn(sh, "button: already running");
+		shell_warn(sh, "magnet: already running");
 	}
 
 	return 0;
 }
 
-static int cmd_button_stop(const struct shell *sh, size_t argc, char **argv)
+static int cmd_magnet_stop(const struct shell *sh, size_t argc, char **argv)
 {
 	ARG_UNUSED(argc);
 	ARG_UNUSED(argv);
 
-	if (button_test_stop(sh) == -EALREADY)
+	if (magnet_test_stop(sh) == -EALREADY)
 	{
-		shell_warn(sh, "button: not running");
+		shell_warn(sh, "magnet: not running");
 	}
 
 	return 0;
 }
 
-SHELL_STATIC_SUBCMD_SET_CREATE(sub_button,
-	SHELL_CMD(start, NULL, "Report touch button presses and releases.", cmd_button_start),
-	SHELL_CMD(stop, NULL, "Stop the button test.", cmd_button_stop),
+SHELL_STATIC_SUBCMD_SET_CREATE(sub_magnet,
+	SHELL_CMD(start, NULL, "Report when a magnet is detected and removed.", cmd_magnet_start),
+	SHELL_CMD(stop, NULL, "Stop the magnet test.", cmd_magnet_stop),
 	SHELL_SUBCMD_SET_END);
-SHELL_CMD_REGISTER(button, &sub_button, "Touch button test", NULL);
+SHELL_CMD_REGISTER(magnet, &sub_magnet, "Magnet sensor test", NULL);
 
 /* cw */
 

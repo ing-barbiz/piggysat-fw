@@ -11,6 +11,10 @@
         {
             "name": "repository root",
             "path": "."
+        },
+        {
+            "name": "v3.4.0",
+            "path": "../../v3.4.0"
         }
     ],
     "settings": {

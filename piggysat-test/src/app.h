@@ -43,9 +43,9 @@ int leds_init(void);
 int leds_test_start(void);
 int leds_test_stop(void);
 
-int button_init(void);
-int button_test_start(const struct shell *sh);
-int button_test_stop(const struct shell *sh);
+int magnet_init(void);
+int magnet_test_start(const struct shell *sh);
+int magnet_test_stop(const struct shell *sh);
 
 int gnss_test_start(const struct shell *sh);
 int gnss_test_stop(const struct shell *sh);

@@ -1,6 +1,6 @@
 {
-    "zephyr-workbench.westWorkspace": "c:\ncs\v3.4.0",
-    "zephyr-workbench.sdk": "c:\Users\Marco Barbetta\opt\zephyr-sdk",
+    "zephyr-workbench.westWorkspace": "c:\\ncs\\v3.4.0",
+    "zephyr-workbench.sdk": "c:\\Users\\Marco Barbetta\\opt\\zephyr-sdk",
     "zephyr-workbench.toolchain": "zephyr",
     "zephyr-workbench.env.BOARD_ROOT": [
         "${workspaceFolder}/.."

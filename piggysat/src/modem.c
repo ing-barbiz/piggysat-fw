@@ -7,9 +7,12 @@
 #include "app.h"
 
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 
+#include <modem/at_parser.h>
 #include <modem/lte_lc.h>
+#include <modem/modem_info.h>
 #include <modem/nrf_modem_lib.h>
 #include <modem/ntn.h>
 #include <nrf_modem_at.h>
@@ -242,7 +245,198 @@ int lte_connect_start(void)
 	return lte_lc_connect_async(lte_handler);
 }
 
+/* Waits in 1 s steps so that a magnet stops the attach promptly. */
 int lte_wait_for_link(int timeout_s)
 {
-	return k_sem_take(&lte_link_sem, K_SECONDS(timeout_s)) == 0 ? 0 : -ETIMEDOUT;
+	for (int t = 0; t < timeout_s; t++)
+	{
+		if (k_sem_take(&lte_link_sem, K_SECONDS(1)) == 0)
+		{
+			return 0;
+		}
+		if (magnet_present())
+		{
+			return -ECANCELED;
+		}
+	}
+
+	return -ETIMEDOUT;
+}
+
+/* Network details logged once attached, from AT%XMONITOR and AT+CGPADDR.
+ *
+ * %XMONITOR: <reg_status>[,<full_name>,<short_name>,<plmn>,<tac>,<AcT>,<band>,<cell_id>,
+ *            <phys_cell_id>,<EARFCN>,<rsrp>,<snr>,<NW-provided_eDRX_value>,<Active-Time>,
+ *            <Periodic-TAU-ext>,<Periodic-TAU>]
+ */
+#define XMONITOR_RESPONSE_SIZE 384
+#define XMONITOR_RSRP_UNKNOWN 255
+#define XMONITOR_SNR_UNKNOWN 127
+
+static const char *reg_status_text(int status)
+{
+	switch (status)
+	{
+	case LTE_LC_NW_REG_NOT_REGISTERED:
+		return "not registered";
+	case LTE_LC_NW_REG_REGISTERED_HOME:
+		return "registered, home";
+	case LTE_LC_NW_REG_SEARCHING:
+		return "searching";
+	case LTE_LC_NW_REG_REGISTRATION_DENIED:
+		return "registration denied";
+	case LTE_LC_NW_REG_UNKNOWN:
+		return "unknown";
+	case LTE_LC_NW_REG_REGISTERED_ROAMING:
+		return "registered, roaming";
+	case LTE_LC_NW_REG_UICC_FAIL:
+		return "UICC failure";
+	default:
+		return "?";
+	}
+}
+
+static const char *act_text(int act)
+{
+	switch (act)
+	{
+	case LTE_LC_LTE_MODE_LTEM:
+		return "LTE-M";
+	case LTE_LC_LTE_MODE_NBIOT:
+		return "NB-IoT";
+	case LTE_LC_LTE_MODE_NTN_NBIOT:
+		return "NB-IoT NTN";
+	default:
+		return "?";
+	}
+}
+
+/* Copies string field 'index' into buf, or "-" when missing or empty. */
+static void at_string(struct at_parser *parser, size_t index, char *buf, size_t size)
+{
+	size_t len = size;
+
+	if (at_parser_string_get(parser, index, buf, &len) != 0 || buf[0] == '\0')
+	{
+		snprintk(buf, size, "-");
+	}
+}
+
+static void ip_address_log(void)
+{
+	char response[128];
+	char ip[64];
+	struct at_parser parser;
+
+	/* +CGPADDR: <cid>,"<IPv4>"[,"<IPv6>"] */
+	if (nrf_modem_at_cmd(response, sizeof(response), "AT+CGPADDR=0") != 0 ||
+		at_parser_init(&parser, response) != 0)
+	{
+		LOG_INF("  IP address     -");
+		return;
+	}
+	at_string(&parser, 2, ip, sizeof(ip));
+	LOG_INF("  IP address     %s", ip);
+}
+
+void lte_info_log(void)
+{
+	char response[XMONITOR_RESPONSE_SIZE];
+	char full_name[32];
+	char short_name[32];
+	char plmn[8];
+	char tac[12];
+	char cell_id[12];
+	char edrx[12];
+	char active_time[12];
+	char tau_ext[12];
+	char tau[12];
+	struct at_parser parser;
+	int reg_status = -1;
+	int act = -1;
+	int band = -1;
+	int pci = -1;
+	int earfcn = -1;
+	int rsrp = XMONITOR_RSRP_UNKNOWN;
+	int snr = XMONITOR_SNR_UNKNOWN;
+	int err;
+
+	err = nrf_modem_at_cmd(response, sizeof(response), "AT%%XMONITOR");
+	if (err)
+	{
+		LOG_WRN("Network info: AT%%XMONITOR failed: %d", err);
+		return;
+	}
+
+	err = at_parser_init(&parser, response);
+	if (!err)
+	{
+		err = at_parser_num_get(&parser, 1, &reg_status);
+	}
+	if (err)
+	{
+		LOG_WRN("Network info: cannot parse: %s", first_line(response));
+		return;
+	}
+
+	LOG_INF("Network info:");
+	LOG_INF("  Registration   %s (%d)", reg_status_text(reg_status), reg_status);
+	if (reg_status != LTE_LC_NW_REG_REGISTERED_HOME &&
+		reg_status != LTE_LC_NW_REG_REGISTERED_ROAMING)
+	{
+		return;
+	}
+
+	at_string(&parser, 2, full_name, sizeof(full_name));
+	at_string(&parser, 3, short_name, sizeof(short_name));
+	at_string(&parser, 4, plmn, sizeof(plmn));
+	at_string(&parser, 5, tac, sizeof(tac));
+	(void)at_parser_num_get(&parser, 6, &act);
+	(void)at_parser_num_get(&parser, 7, &band);
+	at_string(&parser, 8, cell_id, sizeof(cell_id));
+	(void)at_parser_num_get(&parser, 9, &pci);
+	(void)at_parser_num_get(&parser, 10, &earfcn);
+	(void)at_parser_num_get(&parser, 11, &rsrp);
+	(void)at_parser_num_get(&parser, 12, &snr);
+	at_string(&parser, 13, edrx, sizeof(edrx));
+	at_string(&parser, 14, active_time, sizeof(active_time));
+	at_string(&parser, 15, tau_ext, sizeof(tau_ext));
+	at_string(&parser, 16, tau, sizeof(tau));
+
+	LOG_INF("  Operator       %s / %s", full_name, short_name);
+	/* PLMN = MCC (3 digits) + MNC (2 or 3 digits) */
+	if (strlen(plmn) >= 5)
+	{
+		LOG_INF("  MCC / MNC      %.3s / %s (PLMN %s)", plmn, plmn + 3, plmn);
+	}
+	else
+	{
+		LOG_INF("  MCC / MNC      - (PLMN %s)", plmn);
+	}
+	LOG_INF("  Technology     %s (AcT %d)", act_text(act), act);
+	LOG_INF("  Band           %d", band);
+	LOG_INF("  EARFCN         %d", earfcn);
+	LOG_INF("  Cell ID        %s (%lu)", cell_id, strtoul(cell_id, NULL, 16));
+	LOG_INF("  Tracking area  %s (%lu)", tac, strtoul(tac, NULL, 16));
+	LOG_INF("  PCI            %d", pci);
+	if (rsrp == XMONITOR_RSRP_UNKNOWN)
+	{
+		LOG_INF("  RSRP           -");
+	}
+	else
+	{
+		LOG_INF("  RSRP           %d dBm", RSRP_IDX_TO_DBM(rsrp));
+	}
+	if (snr == XMONITOR_SNR_UNKNOWN)
+	{
+		LOG_INF("  SNR            -");
+	}
+	else
+	{
+		LOG_INF("  SNR            %d dB", SNR_IDX_TO_DB(snr));
+	}
+	LOG_INF("  eDRX           %s", edrx);
+	LOG_INF("  Active time    %s", active_time);
+	LOG_INF("  Periodic TAU   %s (ext %s)", tau, tau_ext);
+	ip_address_log();
 }

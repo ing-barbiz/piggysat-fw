@@ -7,7 +7,7 @@ J-Link RTT Viewer works but does not render the shell's line editing.
 
 ```
 piggysat:~$ help
-  button   : Touch button test
+  magnet   : Magnet sensor test
   cw       : LTE CW TX test (band, frequency and power from Kconfig)
   gnss     : GNSS test (positions are not stored)
   led      : LED test
@@ -21,7 +21,7 @@ Up-arrow history and Tab completion work.
 | Command | What it does |
 |---|---|
 | `led start` / `led stop` | Cycles the GNSS (green), LTE (orange) and Sent (red) LEDs, then all on, every 0.5 s, in the background. |
-| `button start` / `button stop` | Prints the touch button's current state, then every press (numbered) and release until stopped. |
+| `magnet start` / `magnet stop` | Prints whether a magnet is on the sensor, then every detection (numbered) and removal until stopped. |
 | `cw start` / `cw stop` | Radio off, antenna on LTE, NTN system mode, then `AT%XRFTEST` CW in NB-IoT mode at the configured band, frequency and power. Prints the TX power the modem measured at the antenna port (returned in 1/16 dBm). Transmits until `cw stop`. |
 | `gnss start` / `gnss stop` | Antenna on GNSS, modem in GPS mode, continuous tracking with GGA/GLL/GSA/GSV/RMC NMEA printed to the shell. Positions are not stored. |
 | `lte send` / `lte abort` | Runs in the background: antenna on LTE, NTN setup (band lock, APN, fixed NTN location from Kconfig), attach, one confirmable CoAP `POST` to ThingsBoard with the configured location (`CONFIG_APP_NTN_LATITUDE` / `_LONGITUDE` / `_ALTITUDE_METERS`), then detach. `lte abort` cancels it while it waits for the network. |
@@ -32,7 +32,7 @@ another one while a test is active is refused ("Modem busy"). Each leaves the mo
 ends.
 
 At boot the tool checks that the modem runs `mfw_nrf9151-ntn` and logs the modem model and hardware
-version. If the modem check fails, only `led` and `button` are available.
+version. If the modem check fails, only `led` and `magnet` are available.
 
 ### GNSS plotter
 

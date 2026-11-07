@@ -14,9 +14,16 @@
 
 LOG_MODULE_REGISTER(gnss, CONFIG_APP_LOG_LEVEL);
 
+/* Satellite info is logged every SATS_LOG_PERIOD_S seconds while searching. */
+#define SATS_LOG_PERIOD_S 3
+
 /* Filled in the GNSS event handler (interrupt context) when a valid fix arrives. */
 static struct nrf_modem_gnss_pvt_data_frame fix_pvt;
-static uint8_t searching_sats;
+
+/* Latest PVT frame, with or without a fix, for the satellite log. */
+static struct nrf_modem_gnss_pvt_data_frame last_pvt;
+static bool last_pvt_valid;
+static struct k_spinlock pvt_lock;
 
 K_SEM_DEFINE(fix_sem, 0, 1);
 
@@ -39,9 +46,66 @@ static uint8_t sats_count(const struct nrf_modem_gnss_pvt_data_frame *pvt, bool 
 	return count;
 }
 
+static const char *sv_system(uint8_t signal)
+{
+	switch (signal)
+	{
+	case NRF_MODEM_GNSS_SIGNAL_GPS_L1_CA:
+		return "GPS";
+	case NRF_MODEM_GNSS_SIGNAL_QZSS_L1_CA:
+		return "QZSS";
+	case NRF_MODEM_GNSS_SIGNAL_GAL_E1_OS:
+		return "GAL";
+	default:
+		return "?";
+	}
+}
+
+/* Logs the satellites of the latest PVT frame (called from the waiting thread). */
+static void sats_log(int64_t start)
+{
+	struct nrf_modem_gnss_pvt_data_frame pvt;
+	k_spinlock_key_t key = k_spin_lock(&pvt_lock);
+	bool valid = last_pvt_valid;
+
+	if (valid)
+	{
+		pvt = last_pvt;
+	}
+	k_spin_unlock(&pvt_lock, key);
+
+	if (!valid)
+	{
+		LOG_INF("GNSS: %d s, no satellite data yet", (int)((k_uptime_get() - start) / 1000));
+		return;
+	}
+
+	LOG_INF("GNSS: %d s, %u satellites tracked, %u used in fix%s%s",
+			(int)((k_uptime_get() - start) / 1000), sats_count(&pvt, false), sats_count(&pvt, true),
+			(pvt.flags & NRF_MODEM_GNSS_PVT_FLAG_DEADLINE_MISSED) ? ", deadline missed" : "",
+			(pvt.flags & NRF_MODEM_GNSS_PVT_FLAG_NOT_ENOUGH_WINDOW_TIME)
+				? ", not enough window time"
+				: "");
+
+	for (size_t i = 0; i < ARRAY_SIZE(pvt.sv); i++)
+	{
+		const struct nrf_modem_gnss_sv *sv = &pvt.sv[i];
+
+		if (sv->sv == 0)
+		{
+			continue;
+		}
+		LOG_INF("  %-4s %3u  C/N0 %2u.%u dB-Hz  elev %3d deg  azim %3d deg%s%s",
+				sv_system(sv->signal), sv->sv, sv->cn0 / 10, sv->cn0 % 10, sv->elevation,
+				sv->azimuth, (sv->flags & NRF_MODEM_GNSS_SV_FLAG_USED_IN_FIX) ? "  used" : "",
+				(sv->flags & NRF_MODEM_GNSS_SV_FLAG_UNHEALTHY) ? "  unhealthy" : "");
+	}
+}
+
 static void gnss_event_handler(int event)
 {
 	struct nrf_modem_gnss_pvt_data_frame pvt;
+	k_spinlock_key_t key;
 
 	if (event != NRF_MODEM_GNSS_EVT_PVT)
 	{
@@ -53,14 +117,15 @@ static void gnss_event_handler(int event)
 		return;
 	}
 
+	key = k_spin_lock(&pvt_lock);
+	last_pvt = pvt;
+	last_pvt_valid = true;
+	k_spin_unlock(&pvt_lock, key);
+
 	if (pvt.flags & NRF_MODEM_GNSS_PVT_FLAG_FIX_VALID)
 	{
 		fix_pvt = pvt;
 		k_sem_give(&fix_sem);
-	}
-	else
-	{
-		searching_sats = sats_count(&pvt, false);
 	}
 }
 
@@ -97,8 +162,11 @@ static int gnss_start(int timeout_s)
 	}
 	if (!err)
 	{
+		k_spinlock_key_t key = k_spin_lock(&pvt_lock);
+
+		last_pvt_valid = false;
+		k_spin_unlock(&pvt_lock, key);
 		k_sem_reset(&fix_sem);
-		searching_sats = 0;
 		err = nrf_modem_gnss_start();
 	}
 
@@ -130,12 +198,36 @@ int gnss_acquire(struct gnss_fix *fix, int timeout_s)
 		return err;
 	}
 
-	err = k_sem_take(&fix_sem, K_SECONDS(timeout_s + 5));
+	/* Wait in 1 s steps so that a magnet stops the search promptly. */
+	err = -ETIMEDOUT;
+	for (int t = 0; t < timeout_s + 5; t++)
+	{
+		if (k_sem_take(&fix_sem, K_SECONDS(1)) == 0)
+		{
+			err = 0;
+			break;
+		}
+		if (magnet_present())
+		{
+			err = -ECANCELED;
+			break;
+		}
+		if ((t + 1) % SATS_LOG_PERIOD_S == 0)
+		{
+			sats_log(start);
+		}
+	}
 	gnss_stop();
+	if (err == -ECANCELED)
+	{
+		LOG_INF("GNSS: search stopped (magnet)");
+		return err;
+	}
 	if (err)
 	{
-		LOG_WRN("GNSS: no fix within %d s (%u satellites tracked)", timeout_s, searching_sats);
-		return -ETIMEDOUT;
+		LOG_WRN("GNSS: no fix within %d s", timeout_s);
+		sats_log(start);
+		return err;
 	}
 
 	fix->latitude = fix_pvt.latitude;

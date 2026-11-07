@@ -21,6 +21,7 @@ target_sources(app PRIVATE
 	src/main.c
 	src/antenna.c
 	src/leds.c
+	src/magnet.c
 	src/gnss.c
 	src/modem.c
 	src/transport.c

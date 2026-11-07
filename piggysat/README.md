@@ -7,6 +7,11 @@ Communicator firmware for the PiggySat board. Every 5 minutes it:
 2. attaches to the satellite network (NB-IoT NTN) and sends the position to ThingsBoard
 3. detaches and sleeps with the modem off until the next cycle
 
+**Magnet = standby.** While a magnet is on the sensor (P0.19 low) the board does nothing: modem
+off, all LEDs off. A magnet that arrives during a cycle stops it within a second while it searches
+for GNSS, waits for the network or sleeps; a message already being sent is completed first. Removing
+the magnet starts a new cycle at once, then the periodic reporting resumes.
+
 | LED | Behaviour |
 |---|---|
 | GNSS (green) | blinks while the GNSS fix is being acquired |
@@ -24,19 +29,27 @@ See the [main README](../README.md) for building, flashing, the board and debug 
 A confirmable CoAP `POST` (JSON) to `api/v1/<token>/telemetry` on ThingsBoard:
 
 ```json
-{"message":"piggysat","latitude":45.409290,"longitude":11.910460,"altitude":48.6,
- "accuracy":7.3,"satellites":7,"ttff":34,"gnss_time":"2026-11-01T10:15:30Z"}
+{"message":"piggysat","latitude":45.409290,"longitude":11.910460,"altitude":48.6,"accuracy":7.3}
 ```
 
 | Field | Meaning |
 |---|---|
+| `message` | `CONFIG_APP_TELEMETRY_MESSAGE` |
 | `latitude`, `longitude`, `altitude` | position of the fix (degrees, metres) |
 | `accuracy` | horizontal accuracy estimate (metres) |
-| `satellites` | satellites used in the fix |
-| `ttff` | time to fix in this cycle (seconds) |
-| `gnss_time` | UTC time of the fix |
 
 A message is only sent with a fresh fix: there is no default or last-known position.
+
+## RTT log
+
+Besides the cycle progress, the log (over RTT) shows:
+
+- **while searching for GNSS**, every 3 s: satellites tracked and used, and for each satellite its
+  system, ID, C/N0, elevation, azimuth and used/unhealthy flags (also once more on a timeout)
+- **the fix**: position, accuracy, satellites used, time to fix and UTC time
+- **once attached**, the network details from `AT%XMONITOR` and `AT+CGPADDR`: registration,
+  operator, MCC/MNC, technology, band, EARFCN, cell ID, tracking area, PCI, RSRP, SNR, eDRX,
+  active time, periodic TAU and IP address (fields the network does not provide show `-`)
 
 ## NTN location
 
@@ -66,8 +79,9 @@ Options are in [Kconfig](Kconfig) and set in [prj.conf](prj.conf); the access to
 | File | Role |
 |---|---|
 | [src/main.c](src/main.c) | the report cycle and the JSON message |
-| [src/gnss.c](src/gnss.c) | single GNSS fix with timeout (antenna on GNSS, GPS system mode) |
-| [src/modem.c](src/modem.c) | modem init and firmware check, NTN setup, attach and link state, NTN location |
+| [src/gnss.c](src/gnss.c) | single GNSS fix with timeout (antenna on GNSS, GPS system mode), satellite log |
+| [src/modem.c](src/modem.c) | modem init and firmware check, NTN setup, attach and link state, NTN location, network info log |
 | [src/transport.c](src/transport.c) | DNS, socket and the CoAP `POST` to ThingsBoard |
 | [src/leds.c](src/leds.c) | LED blink and timed on, driven by work items |
 | [src/antenna.c](src/antenna.c) | J3 antenna switch; it only changes with the radio off |
+| [src/magnet.c](src/magnet.c) | magnet sensor: state, interrupt-driven wake-up for standby |
