@@ -34,6 +34,131 @@ ends.
 At boot the tool checks that the modem runs `mfw_nrf9151-ntn` and logs the modem model and hardware
 version. If the modem check fails, only `led` and `magnet` are available.
 
+## Commands in detail
+
+A suggested order for a new board is `led`, `magnet`, `sim`, `gnss`, `cw`, then `lte send`: each
+step checks a part that the next one relies on. In the outputs below, values in `<...>` depend on
+the board and the network.
+
+### `led start` / `led stop`
+
+Checks that the three LEDs are fitted and driven. The test lights GNSS (red), LTE (orange) and Sent
+(green) one at a time, then all three together, changing every 0.5 s, and repeats until stopped.
+The shell stays free while it runs.
+
+```
+piggysat:~$ led start
+led: cycling gnss (red), lte (orange), sent (green), then all on. 'led stop' ends the test.
+piggysat:~$ led stop
+led: stopped
+```
+
+If one LED stays dark, check the LED orientation and its series resistor.
+
+### `magnet start` / `magnet stop`
+
+Checks the magnet sensor that the communicator uses for standby. It prints the current state, then
+one line each time a magnet is detected or removed. `magnet stop` prints how many detections were
+counted.
+
+```
+piggysat:~$ magnet start
+magnet: currently not detected. Bring a magnet close; 'magnet stop' ends the test.
+magnet: detected (#1)
+magnet: removed
+piggysat:~$ magnet stop
+magnet: stopped (1 detections)
+```
+
+Move the magnet slowly to find the distance at which the sensor switches.
+
+### `sim`
+
+Checks that the SIM is inserted and readable without turning on the radio. It selects the NTN
+system mode, powers only the SIM interface (`AT+CFUN=41`) and waits up to 5 s for the modem to
+report the SIM ready.
+
+```
+piggysat:~$ sim
+sim: powering the SIM interface only (no radio)
+sim: SIM PRESENT
+  PIN:   +CPIN: READY
+  ICCID: %XICCID: <ICCID>
+  IMSI:  <IMSI>
+sim: finished, modem offline
+```
+
+If the SIM is not found, the test prints `SIM NOT DETECTED`, the `%XSIM` state and the `AT+CPIN?`
+error: CME 10 means no SIM inserted, CME 13 means a SIM failure. Check the SIM orientation in J6.
+
+### `gnss start` / `gnss stop`
+
+Checks the GNSS receive path: antenna, matching network, RF switch, LNA and the modem's GNSS
+receiver. The test switches the antenna to GNSS, puts the modem in GNSS-only mode and tracks
+continuously, printing every NMEA sentence (GGA, GLL, GSA, GSV, RMC) as it arrives. Positions are
+shown but not stored.
+
+```
+piggysat:~$ gnss start
+gnss: continuous reception, NMEA output. Positions are not stored. ...
+$GPGSV,...
+$GPGGA,...
+piggysat:~$ gnss stop
+gnss: stopped (<n> NMEA sentences dropped), modem offline
+```
+
+Run it outdoors. `GSV` lists the satellites in view with their C/N0, and `GGA` shows the fix
+quality once a fix is found. To see the same data as live charts, use the
+[GNSS plotter](#gnss-plotter) instead.
+
+### `cw start` / `cw stop`
+
+Checks the LTE transmit path by sending a continuous carrier (CW) with `AT%XRFTEST`. Band,
+frequency and requested power come from Kconfig (default band 255 at 1643.5 MHz). The modem reports
+the power it measured at its antenna port.
+
+```
+piggysat:~$ cw start
+cw: band 255, 1643.5 MHz, <p> dBm requested
+cw: transmits RF. Use a cabled setup or a shielded room.
+cw: transmitting. Measured power at the antenna port: <p> dBm ...
+cw: 'cw stop' ends the test
+piggysat:~$ cw stop
+cw: stopped, modem offline
+```
+
+Connect the LTE output to a spectrum analyzer or power meter through an attenuator. The carrier
+transmits until `cw stop`, so do not run it on an open antenna.
+
+### `lte send` / `lte abort`
+
+Runs a complete satellite message: the same chain as the communicator, but with the fixed location
+from `CONFIG_APP_NTN_LATITUDE` / `_LONGITUDE` / `_ALTITUDE_METERS` instead of a GNSS fix. It runs
+in the background, so the shell stays usable while it waits for the network.
+
+1. Switches the antenna to LTE, sets the NTN band lock and APN, and gives the modem the fixed
+   location.
+2. Attaches to the NTN network, up to `CONFIG_APP_LTE_ATTACH_TIMEOUT_SECONDS`.
+3. Resolves the ThingsBoard host and sends one confirmable CoAP `POST` with the location.
+4. Prints the server's response code, then detaches.
+
+```
+piggysat:~$ lte send
+lte: NTN attach, one CoAP POST with the configured location, then detach. ...
+lte: waiting for the network...
+lte: network attached after <t> s
+lte: resolving the server...
+lte: sending the message, waiting for the server response...
+lte: message accepted by the server (CoAP 2.<xx>)
+lte: detaching from the network (can take up to a minute)...
+lte: finished after <t> s, modem offline
+```
+
+Once attached, the network details from `AT%XMONITOR` are also printed: registration, operator,
+MCC/MNC, technology, band, EARFCN, cell ID, tracking area, PCI, RSRP and SNR. `lte abort` stops the
+test while it is still waiting for the network. A `rejected by the server` line means the network
+link worked but ThingsBoard refused the message: check the access token and the port.
+
 ### GNSS plotter
 
 [tools/gnss_plotter.py](tools/gnss_plotter.py) connects to the board through the J-Link (pylink),

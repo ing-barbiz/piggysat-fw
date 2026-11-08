@@ -7,28 +7,17 @@
 ![nRF Connect SDK: v3.4.0](https://img.shields.io/badge/nRF%20Connect%20SDK-v3.4.0-00a9ce.svg)
 [![Hardware: ing-barbiz/piggysat](https://img.shields.io/badge/hardware-ing--barbiz%2Fpiggysat-lightgrey.svg)](https://github.com/ing-barbiz/piggysat)
 
-PiggySat is an **open source satellite communicator**: open hardware and open firmware that send
-short messages with a position directly over satellite, without terrestrial coverage. This
-repository holds the firmware; the hardware (schematics, PCB, enclosure) is in
-[ing-barbiz/piggysat](https://github.com/ing-barbiz/piggysat).
+Firmware for PiggySat, the open source NB-IoT NTN satellite communicator. The project overview,
+hardware and measurements are in [ing-barbiz/piggysat](https://github.com/ing-barbiz/piggysat).
 
-To the best of our knowledge, PiggySat is the **world's first open source satellite communicator
-based on NB-IoT NTN**.
+This repository holds two Zephyr applications for the same board:
 
-It is built on **NB-IoT NTN** (3GPP Release 17), the satellite extension of the cellular IoT
-standard, instead of a proprietary satellite network. The radio is a standard cellular IoT SiP
-(Nordic nRF9151) running NTN modem firmware, and connectivity comes from NTN operators with
-IoT-style data plans. Communicators based on proprietary systems such as Iridium need a dedicated
-satellite modem and per-message airtime, which makes them considerably more expensive to build and
-to run.
-
-> **Not an emergency beacon.** PiggySat is not a certified COSPAS-SARSAT PLB/EPIRB and does not
-> alert rescue services: messages go to a server you configure (ThingsBoard). Do not rely on it as
-> your only means of calling for help.
-
-**Project status:** the communicator firmware currently reports the GNSS position periodically and
-stops while a magnet is on the sensor. SOS messages, delivery confirmation to the user and battery management are not implemented
-yet.
+- **[piggysat](piggysat/)** is the communicator. Every 5 minutes it acquires a GNSS fix, attaches
+  to the satellite network and sends the position to ThingsBoard over CoAP, then sleeps with the
+  modem off. A magnet on the sensor puts it in standby.
+- **[piggysat-test](piggysat-test/)** is the hardware test tool. It exposes shell commands over RTT
+  to check the LEDs, the magnet sensor, the SIM, GNSS reception, the LTE transmitter (CW) and a
+  complete satellite message.
 
 ## Repository layout
 
