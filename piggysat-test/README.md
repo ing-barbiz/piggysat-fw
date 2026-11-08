@@ -159,19 +159,52 @@ MCC/MNC, technology, band, EARFCN, cell ID, tracking area, PCI, RSRP and SNR. `l
 test while it is still waiting for the network. A `rejected by the server` line means the network
 link worked but ThingsBoard refused the message: check the access token and the port.
 
-### GNSS plotter
+## GNSS plotter
 
-[tools/gnss_plotter.py](tools/gnss_plotter.py) connects to the board through the J-Link (pylink),
-sends `gnss start` over RTT and plots the NMEA output live: C/N0 per satellite (green = used in the
-fix), a sky plot, satellites tracked/used and C/N0 over time, and the fix data (UTC, position,
-altitude, HDOP/PDOP/VDOP, speed, course). Closing the window sends `gnss stop`.
+[tools/gnss_plotter.py](tools/gnss_plotter.py) is a desktop tool that shows the `gnss` test as live
+charts instead of raw NMEA text. It connects to the board through the J-Link with
+[pylink](https://pypi.org/project/pylink-square/), opens RTT, sends `gnss start` to the test shell,
+and decodes the NMEA sentences as they arrive. Closing the window sends `gnss stop`.
+
+![GNSS plotter showing a 3D fix](../Pictures/gnss-plotter.png)
+
+*Example screenshot, rendered from simulated NMEA data.*
+
+The window is refreshed every second and has five areas:
+
+| Area | What it shows |
+|---|---|
+| Signal strength | C/N0 of every tracked satellite as a bar, coloured from red (weak) to green (strong). Solid bars are used in the fix, hatched bars are only tracked. The dashed line marks 30 dB-Hz. |
+| Sky plot | Position of each satellite by azimuth and elevation, coloured by C/N0; satellites used in the fix have a dark outline. |
+| Satellites | Number of satellites tracked and used in the fix over the last 5 minutes. |
+| C/N0 | Mean and maximum C/N0 over the last 5 minutes. |
+| Fix panel | Fix type (no fix, 2D, 3D), UTC date and time, latitude, longitude, altitude, speed, course, HDOP, PDOP, VDOP, and NMEA stream statistics. |
+
+The status in the top right corner shows whether NMEA data is arriving over RTT.
+
+### Running it
 
 ```sh
 pip install -r tools/requirements.txt
-python tools/gnss_plotter.py            # --serial <J-Link SN>, --log nmea.txt, --echo
+python tools/gnss_plotter.py
 ```
 
-Close J-Link RTT Viewer and any other RTT client first; two RTT readers steal each other's data.
+Flash `piggysat-test` first and close J-Link RTT Viewer and any other RTT client: two RTT readers
+steal each other's data. Run the board outdoors, as for the `gnss` test.
+
+| Option | Purpose |
+|---|---|
+| `--serial <SN>` | J-Link serial number, when more than one probe is connected |
+| `--device <name>` | J-Link target device (default `nRF9151_xxCA`) |
+| `--speed <kHz>` | SWD speed (default 4000) |
+| `--rtt-address <addr>` | RTT control block address (`_SEGGER_RTT` in `zephyr.map`), if auto-detection fails |
+| `--no-start` / `--no-stop` | Do not send `gnss start` on launch / `gnss stop` on exit |
+| `--log <file>` | Append the raw NMEA sentences to a file |
+| `--echo` | Also print the NMEA sentences to the console |
+| `--interval <ms>` | Plot refresh period (default 1000) |
+
+Use it to compare antennas, matching networks or placements: the C/N0 bars and the mean C/N0 over
+time show the effect of a change within a few seconds.
 
 **CW test warning:** `cw start` transmits RF. Use a cabled setup or a shielded room.
 
