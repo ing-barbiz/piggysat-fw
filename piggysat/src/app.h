@@ -24,9 +24,9 @@ int antenna_select(enum antenna_path path);
 /* leds.c */
 enum led_id
 {
-	LED_GNSS, /* green */
+	LED_GNSS, /* red */
 	LED_LTE,  /* orange */
-	LED_SENT, /* red */
+	LED_SENT, /* green */
 };
 
 int leds_init(void);

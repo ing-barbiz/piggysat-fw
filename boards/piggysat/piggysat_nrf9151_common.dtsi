@@ -17,8 +17,8 @@
 		compatible = "gpio-leds";
 
 		gnss_led: led_0 {
-			gpios = <&gpio0 29 GPIO_ACTIVE_LOW>;	/* pad 48, D3, R8 470R */
-			label = "GNSS LED (green)";
+			gpios = <&gpio0 27 GPIO_ACTIVE_LOW>;	/* pad 45, D2, R4 4k7 */
+			label = "GNSS LED (red)";
 		};
 
 		lte_led: led_1 {
@@ -27,8 +27,8 @@
 		};
 
 		sent_led: led_2 {
-			gpios = <&gpio0 27 GPIO_ACTIVE_LOW>;	/* pad 45, D2, R4 4k7 */
-			label = "Sent LED (red)";
+			gpios = <&gpio0 29 GPIO_ACTIVE_LOW>;	/* pad 48, D3, R8 470R */
+			label = "Sent LED (green)";
 		};
 	};
 

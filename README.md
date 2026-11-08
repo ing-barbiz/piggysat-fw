@@ -107,9 +107,9 @@ nRF91 layout, so TF-M starts at `0x0` and the application at `0x40000`.
 
 | Function | Pad | GPIO | Devicetree | Polarity |
 |---|---|---|---|---|
-| GNSS LED, green (D3) | 48 | P0.29 | `led0` / `gnss_led` | active low |
+| GNSS LED, red (D2) | 45 | P0.27 | `led0` / `gnss_led` | active low |
 | LTE LED, orange (D1) | 47 | P0.28 | `led1` / `lte_led` | active low |
-| Sent LED, red (D2) | 45 | P0.27 | `led2` / `sent_led` | active low |
+| Sent LED, green (D3) | 48 | P0.29 | `led2` / `sent_led` | active low |
 | Magnet sensor (U3 output) | 80 | P0.19 | `sw0` / `magnet_sensor` | active low = magnet present |
 | Antenna selection switch (J3) | 12 | P0.25 | `antenna_switch` (`piggysat,antenna-switch`) | output: low = LTE, high = GNSS |
 
@@ -138,7 +138,7 @@ no terrestrial network involved.
 
 ### What happens in each cycle
 
-1. The modem switches the antenna to GNSS and acquires a fix (green LED blinking).
+1. The modem switches the antenna to GNSS and acquires a fix (red LED blinking).
 2. The modem switches the antenna to LTE, receives the fix as its NTN location, and attaches to
    the Skylo network (orange LED blinking). Once attached, the RTT log shows the operator, band,
    EARFCN, cell, RSRP, SNR and IP address from `AT%XMONITOR`.
@@ -148,7 +148,7 @@ no terrestrial network involved.
    {"message":"piggysat","latitude":45.409290,"longitude":11.910460,"altitude":48.6,"accuracy":7.3}
    ```
 
-4. ThingsBoard acknowledges the request; the red LED stays on for 30 s and the RTT log shows the
+4. ThingsBoard acknowledges the request; the green LED stays on for 30 s and the RTT log shows the
    CoAP response code (2.xx means accepted).
 5. The device detaches and sleeps with the modem off until the next cycle.
 

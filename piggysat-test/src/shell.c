@@ -61,7 +61,7 @@ static int cmd_led_start(const struct shell *sh, size_t argc, char **argv)
 		return 0;
 	}
 
-	shell_print(sh, "led: cycling gnss (green), lte (orange), sent (red), then all on. 'led stop' ends the test.");
+	shell_print(sh, "led: cycling gnss (red), lte (orange), sent (green), then all on. 'led stop' ends the test.");
 	return 0;
 }
 

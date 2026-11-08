@@ -20,7 +20,7 @@ Up-arrow history and Tab completion work.
 
 | Command | What it does |
 |---|---|
-| `led start` / `led stop` | Cycles the GNSS (green), LTE (orange) and Sent (red) LEDs, then all on, every 0.5 s, in the background. |
+| `led start` / `led stop` | Cycles the GNSS (red), LTE (orange) and Sent (green) LEDs, then all on, every 0.5 s, in the background. |
 | `magnet start` / `magnet stop` | Prints whether a magnet is on the sensor, then every detection (numbered) and removal until stopped. |
 | `cw start` / `cw stop` | Radio off, antenna on LTE, NTN system mode, then `AT%XRFTEST` CW in NB-IoT mode at the configured band, frequency and power. Prints the TX power the modem measured at the antenna port (returned in 1/16 dBm). Transmits until `cw stop`. |
 | `gnss start` / `gnss stop` | Antenna on GNSS, modem in GPS mode, continuous tracking with GGA/GLL/GSA/GSV/RMC NMEA printed to the shell. Positions are not stored. |

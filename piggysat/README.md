@@ -14,9 +14,9 @@ the magnet starts a new cycle at once, then the periodic reporting resumes.
 
 | LED | Behaviour |
 |---|---|
-| GNSS (green) | blinks while the GNSS fix is being acquired |
+| GNSS (red) | blinks while the GNSS fix is being acquired |
 | LTE (orange) | blinks while the NTN connection is set up and the message is sent |
-| Sent (red) | on for 30 s after the server accepted the message |
+| Sent (green) | on for 30 s after the server accepted the message |
 
 The period runs from the start of one cycle to the start of the next. A cycle can take several
 minutes (GNSS fix, NTN attach ~1 min, message ~30 s, detach ~30 s); if it takes longer than the

@@ -20,7 +20,7 @@ static const struct gpio_dt_spec leds[] = {
 	GPIO_DT_SPEC_GET(DT_ALIAS(led2), gpios),
 };
 
-static const char *const led_names[] = {"gnss (green)", "lte (orange)", "sent (red)"};
+static const char *const led_names[] = {"gnss (red)", "lte (orange)", "sent (green)"};
 
 static struct k_work_delayable led_test_work;
 static size_t led_test_step;
