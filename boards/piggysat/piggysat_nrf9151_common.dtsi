@@ -17,17 +17,17 @@
 		compatible = "gpio-leds";
 
 		gnss_led: led_0 {
-			gpios = <&gpio0 27 GPIO_ACTIVE_LOW>;	/* pad 45, D2, R4 4k7 */
+			gpios = <&gpio0 29 GPIO_ACTIVE_LOW>;	/* pad 48, D1, R8 4k7 */
 			label = "GNSS LED (red)";
 		};
 
 		lte_led: led_1 {
-			gpios = <&gpio0 28 GPIO_ACTIVE_LOW>;	/* pad 47, D1, R1 4k7 */
+			gpios = <&gpio0 28 GPIO_ACTIVE_LOW>;	/* pad 47, D2, R1 4k7 */
 			label = "LTE LED (orange)";
 		};
 
 		sent_led: led_2 {
-			gpios = <&gpio0 29 GPIO_ACTIVE_LOW>;	/* pad 48, D3, R8 470R */
+			gpios = <&gpio0 27 GPIO_ACTIVE_LOW>;	/* pad 45, D3, R4 470R */
 			label = "Sent LED (green)";
 		};
 	};

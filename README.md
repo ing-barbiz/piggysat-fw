@@ -96,9 +96,9 @@ nRF91 layout, so TF-M starts at `0x0` and the application at `0x40000`.
 
 | Function | Pad | GPIO | Devicetree | Polarity |
 |---|---|---|---|---|
-| GNSS LED, red (D2) | 45 | P0.27 | `led0` / `gnss_led` | active low |
-| LTE LED, orange (D1) | 47 | P0.28 | `led1` / `lte_led` | active low |
-| Sent LED, green (D3) | 48 | P0.29 | `led2` / `sent_led` | active low |
+| GNSS LED, red (D1) | 48 | P0.29 | `led0` / `gnss_led` | active low |
+| LTE LED, orange (D2) | 47 | P0.28 | `led1` / `lte_led` | active low |
+| Sent LED, green (D3) | 45 | P0.27 | `led2` / `sent_led` | active low |
 | Magnet sensor (U3 output) | 80 | P0.19 | `sw0` / `magnet_sensor` | active low = magnet present |
 | Antenna selection switch (J3) | 12 | P0.25 | `antenna_switch` (`piggysat,antenna-switch`) | output: low = LTE, high = GNSS |
 
