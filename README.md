@@ -113,6 +113,56 @@ nRF91 layout, so TF-M starts at `0x0` and the application at `0x40000`.
 | Magnet sensor (U3 output) | 80 | P0.19 | `sw0` / `magnet_sensor` | active low = magnet present |
 | Antenna selection switch (J3) | 12 | P0.25 | `antenna_switch` (`piggysat,antenna-switch`) | output: low = LTE, high = GNSS |
 
+## End-to-end test
+
+The final test sent real positions from PiggySat to a ThingsBoard dashboard over satellite, with
+no terrestrial network involved.
+
+| Link | What was used |
+|---|---|
+| Device | PiggySat running the [piggysat](piggysat/) firmware |
+| Satellite network | Skylo NB-IoT NTN, with the modem locked to bands 255 and 256 (`CONFIG_APP_BAND_LOCK_LIST`) |
+| SIM and data plan | Monogoto SIM with NTN coverage, APN `go.mono` (`CONFIG_APP_APN`) |
+| Backend | ThingsBoard Cloud, CoAP endpoint `coap.thingsboard.cloud`, port 5683 |
+| Location | Padova, Italy, outdoors with about half of the sky unobstructed |
+
+### Setup
+
+1. **ThingsBoard:** create a device on ThingsBoard Cloud and copy its access token into
+   `secrets.conf` (see [Building](#building)).
+2. **SIM:** insert the Monogoto SIM. The `sim` command of [piggysat-test](piggysat-test/) confirms
+   it is detected and prints its ICCID and IMSI.
+3. **Firmware:** build and flash [piggysat](piggysat/) with the APN and band lock above.
+4. **Placement:** put the device outdoors with as much open sky as possible. Both the GNSS fix and
+   the NTN link need it; the test worked with about half of the sky unobstructed.
+
+### What happens in each cycle
+
+1. The modem switches the antenna to GNSS and acquires a fix (green LED blinking).
+2. The modem switches the antenna to LTE, receives the fix as its NTN location, and attaches to
+   the Skylo network (orange LED blinking). Once attached, the RTT log shows the operator, band,
+   EARFCN, cell, RSRP, SNR and IP address from `AT%XMONITOR`.
+3. The firmware sends one confirmable CoAP `POST` to `api/v1/<token>/telemetry` with the position:
+
+   ```json
+   {"message":"piggysat","latitude":45.409290,"longitude":11.910460,"altitude":48.6,"accuracy":7.3}
+   ```
+
+4. ThingsBoard acknowledges the request; the red LED stays on for 30 s and the RTT log shows the
+   CoAP response code (2.xx means accepted).
+5. The device detaches and sleeps with the modem off until the next cycle.
+
+On ThingsBoard, each message appears under the device's **Latest telemetry** as `message`,
+`latitude`, `longitude`, `altitude` and `accuracy`, ready to plot on a map widget.
+
+### Result
+
+On 7 November 2026 the ThingsBoard dashboard received three positions from the device
+`piggysat-01`, at 21:27:56, 21:32:37 and 21:35:30, all sent over the Skylo satellite link. The
+dashboard plots them on a route map and lists them in a time series table.
+
+![ThingsBoard dashboard with the positions received over satellite](Pictures/thingsboard-dashboard.png)
+
 ## Troubleshooting
 
 **NTN mode fails (`-14` from `lte_lc_system_mode_set()`).** `-14` only means `AT%XSYSTEMMODE`
