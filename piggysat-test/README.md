@@ -168,7 +168,7 @@ and decodes the NMEA sentences as they arrive. Closing the window sends `gnss st
 
 ![GNSS plotter showing a 3D fix](../Pictures/gnss-plotter.png)
 
-*Example screenshot, rendered from simulated NMEA data.*
+*A real session with the PiggySat antenna: 13 GPS satellites tracked, 5 used, 3D fix.*
 
 The window is refreshed every second and has five areas:
 

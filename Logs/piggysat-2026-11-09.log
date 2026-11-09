@@ -1,0 +1,116 @@
+00> *** Booting My Application v1.0.0-17a8e1fd2f81 ***
+00> *** Using nRF Connect SDK v3.4.0-99553055607b ***
+00> *** Using Zephyr OS v4.4.0-bf801e4e3d19 ***
+00> [00:00:00.268,676] <inf> main: PiggySat v1.0.0 started: report every 300 s
+00> [00:00:00.268,707] <inf> antenna: Antenna switch initialized: LTE
+00> [00:00:00.551,757] <inf> modem: Modem firmware: mfw_nrf9151-ntn_1.0.1
+00> [00:00:00.551,818] <inf> main: === Cycle 1 ===
+00> [00:00:00.551,849] <inf> gnss: GNSS: searching (timeout 180 s)
+00> [00:00:00.575,256] <inf> antenna: Antenna switched to GNSS
+00> [00:00:03.590,240] <inf> gnss: GNSS: 3 s, 5 satellites tracked, 0 used in fix
+00> [00:00:03.590,332] <inf> gnss:   GPS   14  C/N0 34.7 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:03.590,423] <inf> gnss:   GPS   11  C/N0 39.0 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:03.590,484] <inf> gnss:   GPS   30  C/N0 47.0 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:03.590,576] <inf> gnss:   GPS   21  C/N0 38.9 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:03.590,637] <inf> gnss:   GPS    5  C/N0 45.0 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:06.591,186] <inf> gnss: GNSS: 6 s, 6 satellites tracked, 0 used in fix
+00> [00:00:06.591,278] <inf> gnss:   GPS   14  C/N0 35.3 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:06.591,369] <inf> gnss:   GPS   11  C/N0 38.3 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:06.591,430] <inf> gnss:   GPS   30  C/N0 46.4 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:06.591,522] <inf> gnss:   GPS   21  C/N0 42.4 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:06.591,583] <inf> gnss:   GPS    5  C/N0 41.1 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:06.591,674] <inf> gnss:   GPS   31  C/N0 25.8 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:09.592,193] <inf> gnss: GNSS: 9 s, 6 satellites tracked, 0 used in fix
+00> [00:00:09.592,285] <inf> gnss:   GPS   14  C/N0 34.8 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:09.592,376] <inf> gnss:   GPS   11  C/N0 39.3 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:09.592,437] <inf> gnss:   GPS   30  C/N0 46.3 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:09.592,529] <inf> gnss:   GPS   21  C/N0 43.4 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:09.592,590] <inf> gnss:   GPS    5  C/N0 40.4 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:09.592,681] <inf> gnss:   GPS   20  C/N0 24.2 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:12.593,200] <inf> gnss: GNSS: 12 s, 8 satellites tracked, 0 used in fix
+00> [00:00:12.593,292] <inf> gnss:   GPS   14  C/N0 35.9 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:12.593,383] <inf> gnss:   GPS   11  C/N0 38.7 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:12.593,444] <inf> gnss:   GPS   30  C/N0 45.9 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:12.593,536] <inf> gnss:   GPS   21  C/N0 43.8 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:12.593,597] <inf> gnss:   GPS    5  C/N0 40.5 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:12.593,688] <inf> gnss:   GPS    9  C/N0 26.4 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:12.593,780] <inf> gnss:   GPS   19  C/N0 27.0 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:12.593,841] <inf> gnss:   GPS    8  C/N0 28.6 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:15.594,360] <inf> gnss: GNSS: 15 s, 8 satellites tracked, 0 used in fix
+00> [00:00:15.594,451] <inf> gnss:   GPS   14  C/N0 35.5 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:15.594,543] <inf> gnss:   GPS   11  C/N0 37.5 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:15.594,604] <inf> gnss:   GPS   30  C/N0 46.6 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:15.594,696] <inf> gnss:   GPS   21  C/N0 44.2 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:15.594,757] <inf> gnss:   GPS    5  C/N0 40.2 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:15.594,848] <inf> gnss:   GPS    9  C/N0 25.0 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:15.594,940] <inf> gnss:   GPS   31  C/N0 24.7 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:15.595,001] <inf> gnss:   GPS   12  C/N0 25.6 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:18.595,520] <inf> gnss: GNSS: 18 s, 11 satellites tracked, 0 used in fix
+00> [00:00:18.595,611] <inf> gnss:   GPS   14  C/N0 33.8 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:18.595,703] <inf> gnss:   GPS   11  C/N0 39.4 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:18.595,764] <inf> gnss:   GPS   30  C/N0 45.0 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:18.595,855] <inf> gnss:   GPS   21  C/N0 43.0 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:18.595,916] <inf> gnss:   GPS    5  C/N0 40.2 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:18.596,008] <inf> gnss:   GPS    2  C/N0 24.5 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:18.596,099] <inf> gnss:   GPS    1  C/N0 25.3 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:18.596,160] <inf> gnss:   GPS    7  C/N0 28.7 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:18.596,252] <inf> gnss:   GPS   20  C/N0 25.9 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:18.596,343] <inf> gnss:   GPS   12  C/N0 24.4 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:18.596,435] <inf> gnss:   GPS   10  C/N0 24.9 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:21.596,923] <inf> gnss: GNSS: 21 s, 9 satellites tracked, 0 used in fix
+00> [00:00:21.597,015] <inf> gnss:   GPS   14  C/N0 36.8 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:21.597,106] <inf> gnss:   GPS   11  C/N0 36.8 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:21.597,167] <inf> gnss:   GPS   30  C/N0 46.1 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:21.597,259] <inf> gnss:   GPS   21  C/N0 43.1 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:21.597,320] <inf> gnss:   GPS    5  C/N0 41.1 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:21.597,412] <inf> gnss:   GPS    8  C/N0 25.9 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:21.597,503] <inf> gnss:   GPS   24  C/N0 24.7 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:21.597,564] <inf> gnss:   GPS   10  C/N0 27.4 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:21.597,656] <inf> gnss:   GPS   23  C/N0 24.7 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:24.598,175] <inf> gnss: GNSS: 24 s, 9 satellites tracked, 0 used in fix
+00> [00:00:24.598,266] <inf> gnss:   GPS   14  C/N0 36.7 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:24.598,358] <inf> gnss:   GPS   11  C/N0 35.5 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:24.598,419] <inf> gnss:   GPS   30  C/N0 45.4 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:24.598,510] <inf> gnss:   GPS   21  C/N0 43.4 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:24.598,571] <inf> gnss:   GPS    5  C/N0 40.9 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:24.598,663] <inf> gnss:   GPS    8  C/N0 24.5 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:24.598,754] <inf> gnss:   GPS   12  C/N0 28.2 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:24.598,815] <inf> gnss:   GPS   10  C/N0 25.0 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:24.598,907] <inf> gnss:   GPS   18  C/N0 26.2 dB-Hz  elev   0 deg  azim   0 deg
+00> [00:00:27.593,017] <inf> main: GNSS fix: 45.409442, 11.910877, alt 53.0 m, accuracy 26.5 m, 4 sats, 27 s, 2026-11-09T07:59:30Z
+00> [00:00:27.616,729] <inf> antenna: Antenna switched to LTE
+00> [00:00:27.627,380] <inf> modem: LTE: attaching (NTN)
+00> [00:00:27.666,534] <inf> ntn: Location updates requested immediately, accuracy: 200 m
+00> [00:00:33.281,219] <inf> ntn: Location updates requested immediately, accuracy: 275 m
+00> [00:00:33.283,294] <inf> modem: Network registration status: 2
+00> [00:00:33.283,325] <inf> modem: Cell: id=2715027 tac=15027
+00> [00:00:37.513,854] <inf> modem: RRC connected
+00> [00:01:13.520,782] <inf> modem: PDN event 0 (cid 0)
+00> [00:01:13.521,270] <inf> modem: Network registration status: 5
+00> [00:01:13.521,423] <inf> main: LTE: attached
+00> [00:01:13.522,430] <inf> modem: Network info:
+00> [00:01:13.522,460] <inf> modem:   Registration   registered, roaming (5)
+00> [00:01:13.522,766] <inf> modem:   Operator       - / -
+00> [00:01:13.522,827] <inf> modem:   MCC / MNC      901 / 98 (PLMN 90198)
+00> [00:01:13.522,857] <inf> modem:   Technology     NB-IoT NTN (AcT 14)
+00> [00:01:13.522,857] <inf> modem:   Band           255
+00> [00:01:13.522,888] <inf> modem:   EARFCN         228841
+00> [00:01:13.522,949] <inf> modem:   Cell ID        00296D93 (2715027)
+00> [00:01:13.522,979] <inf> modem:   Tracking area  3AB3 (15027)
+00> [00:01:13.522,979] <inf> modem:   PCI            27
+00> [00:01:13.523,010] <inf> modem:   RSRP           -124 dBm
+00> [00:01:13.523,010] <inf> modem:   SNR            2 dB
+00> [00:01:13.523,040] <inf> modem:   eDRX           -
+00> [00:01:13.523,101] <inf> modem:   Active time    11100000
+00> [00:01:13.523,132] <inf> modem:   Periodic TAU   11100000 (ext 00111000)
+00> [00:01:13.524,078] <inf> modem:   IP address     10.1.86.215
+00> [00:01:13.524,078] <inf> main: LTE: sending
+00> [00:01:28.893,066] <inf> transport: CoAP POST (97 bytes) to api/v1/<token>/telemetry: {"message":"piggysat","latitude":45.409442,"longitude":11.910877,"altitude":53.0,"accuracy":26.5}
+00> [00:02:00.250,213] <inf> main: Message accepted (CoAP 2.01)
+00> [00:02:00.250,244] <inf> main: LTE: detaching
+00> [00:02:30.347,259] <inf> modem: Network registration status: 0
+00> [00:02:30.347,320] <inf> modem: Cell: id=-1 tac=-1
+00> [00:02:33.453,094] <inf> ntn: Location updates requested immediately, accuracy: 200 m
+00> [00:02:33.810,577] <inf> main: Sleeping until the next cycle
+00> [00:02:33.817,718] <inf> ntn: Location updates not requested immediately
+00> [00:02:33.817,840] <inf> modem: RRC idle

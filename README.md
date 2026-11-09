@@ -42,6 +42,10 @@ The ThingsBoard access token is not committed. Copy [secrets.conf.example](secre
 `secrets.conf` at the repository root (git-ignored) and set `CONFIG_APP_THINGSBOARD_ACCESS_TOKEN`
 there; both apps merge it automatically.
 
+> **No prebuilt firmware.** The access token is compiled into the firmware image, so built
+> binaries are not published: anyone with the image could send data to the ThingsBoard device.
+> Build the firmware yourself with your own ThingsBoard device and token.
+
 The board definition lives in [boards/piggysat/](boards/piggysat/), one level above the apps, so the
 board root is the repository root (`-DBOARD_ROOT=..` from an app folder).
 
@@ -50,8 +54,10 @@ board root is the repository root (`-DBOARD_ROOT=..` from an app folder).
 Open [piggysat.code-workspace](piggysat.code-workspace): it contains both apps as workspace
 folders. Each app has its [Zephyr Workbench](https://marketplace.visualstudio.com/items?itemName=Ac6.zephyr-workbench)
 build configurations in its own `.vscode/settings.json` (west workspace `c:\ncs\v3.4.0`, Zephyr SDK
-1.0.1, board `piggysat/nrf9151/ns`, sysbuild, `-DBOARD_ROOT=..`, `nrfutil` runner with `--erase`).
-The NCS and SDK paths are machine-specific; adjust them if your installation differs.
+1.0.1, board `piggysat/nrf9151/ns`, sysbuild, `-DBOARD_ROOT=c:/ncs/workspace/piggysat-fw`,
+`nrfutil` runner with `--erase`). The NCS, SDK and board root paths are machine-specific; adjust
+them if your installation differs. The board root must be absolute here, because Workbench does not
+run the build from the app folder.
 
 ### Command line
 
@@ -146,11 +152,35 @@ On ThingsBoard, each message appears under the device's **Latest telemetry** as 
 
 ### Result
 
-On 7 November 2026 the ThingsBoard dashboard received three positions from the device
-`piggysat-01`, at 21:27:56, 21:32:37 and 21:35:30, all sent over the Skylo satellite link. The
+On 9 November 2026 the ThingsBoard dashboard received three positions from the device
+`piggysat-01`, at 08:52:39, 08:56:54 and 09:00:53, all sent over the Skylo satellite link. The
 dashboard plots them on a route map and lists them in a time series table.
 
 ![ThingsBoard dashboard with the positions received over satellite](Pictures/thingsboard-dashboard.png)
+
+The RTT log of one complete cycle from the same morning is saved in
+[Logs/piggysat-2026-11-09.log](Logs/piggysat-2026-11-09.log). Its GNSS fix is stamped
+07:59:30 UTC, and its message is the one received at 09:00:53 (Italian time, UTC+1).
+
+| Phase | Time | What the log shows |
+|---|---|---|
+| GNSS fix | 27 s | 5 satellites tracked after 3 s, up to 11 later; fix with 4 satellites, 26.5 m accuracy; strongest satellite 47 dB-Hz |
+| NTN attach | 46 s | network found after 6 s, RRC connected after 10 s, registered with the data connection active after 46 s |
+| Message | 47 s | 97-byte JSON sent about 15 s after the attach; ThingsBoard answered **CoAP 2.01 Created** 31 s later |
+| Detach | 34 s | deregistered, then the modem went to sleep |
+| **Whole cycle** | **2 min 34 s** | from boot to sleep |
+
+Network details reported by the modem once attached:
+
+| Parameter | Value |
+|---|---|
+| Registration | registered, roaming |
+| PLMN | 901 / 98 |
+| Technology | NB-IoT NTN |
+| Band / EARFCN | 255 / 228841 |
+| Cell ID / tracking area / PCI | 2715027 / 15027 / 27 |
+| RSRP / SNR | −124 dBm / 2 dB |
+| Modem firmware | `mfw_nrf9151-ntn_1.0.1` |
 
 ## Troubleshooting
 

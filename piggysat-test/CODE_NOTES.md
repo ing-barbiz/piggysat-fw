@@ -113,4 +113,4 @@ access port locks again whenever the CPU sleeps in WFI. Flash with `--erase`, si
 ## Debug Build
 
 `fatal-debug.conf` disables reset-on-fatal-error (the system halts and the fault log stays readable). Add it with
-`west build -b piggysat/nrf9151/ns -- -DBOARD_ROOT=. -DEXTRA_CONF_FILE=fatal-debug.conf`.
+`west build -b piggysat/nrf9151/ns --sysbuild -- -DBOARD_ROOT=.. -DEXTRA_CONF_FILE=fatal-debug.conf`.

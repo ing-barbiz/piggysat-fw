@@ -8,14 +8,28 @@
     "zephyr-workbench.build.active": 0,
     "zephyr-workbench.build.configurations": [
         {
-            "name": "piggysat",
+            "name": "piggysat-test",
             "active": "true",
             "board": "piggysat/nrf9151/ns",
             "sysbuild": "true",
             "default-runner": "nrfutil",
             "custom-args": "--erase",
             "west-flags": [
-                "-DBOARD_ROOT=.."
+                "-DBOARD_ROOT=c:/ncs/workspace/piggysat-fw"
+            ]
+        },
+        {
+            "name": "piggysat-debug",
+            "active": "false",
+            "board": "piggysat/nrf9151/ns",
+            "sysbuild": "true",
+            "default-runner": "nrfutil",
+            "custom-args": "--erase",
+            "west-flags": [
+                "-DBOARD_ROOT=c:/ncs/workspace/piggysat-fw"
+            ],
+            "env.EXTRA_CONF_FILE": [
+                "fatal-debug.conf"
             ]
         }
     ]
