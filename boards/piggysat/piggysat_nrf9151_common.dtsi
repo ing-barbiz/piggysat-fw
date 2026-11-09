@@ -35,9 +35,9 @@
 	buttons {
 		compatible = "gpio-keys";
 
-		/* Magnet sensor on U3's push-pull output: active (low) = magnet present. */
+		/* Magnet sensor S1 (TMR1304S) push-pull output: active (low) = magnet present. */
 		magnet_sensor: button_0 {
-			gpios = <&gpio0 19 GPIO_ACTIVE_LOW>;	/* pad 80, U3 + S1 */
+			gpios = <&gpio0 19 GPIO_ACTIVE_LOW>;	/* pad 80, S1 */
 			label = "Magnet sensor";
 			zephyr,code = <INPUT_KEY_0>;
 		};

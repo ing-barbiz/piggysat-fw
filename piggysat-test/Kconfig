@@ -41,7 +41,7 @@ config APP_THINGSBOARD_ACCESS_TOKEN
 
 config APP_COAP_ACK_TIMEOUT_MS
 	int "CoAP initial ACK timeout in milliseconds"
-	default 8000
+	default 60000
 	range 1000 100000
 	help
 	  Initial wait for the ACK of a confirmable CoAP request before it is

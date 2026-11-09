@@ -6,7 +6,7 @@ menu "piggysat"
 
 config APP_REPORT_INTERVAL_SECONDS
 	int "Report interval in seconds"
-	default 300
+	default 900
 	range 60 86400
 	help
 	  Time between the start of two report cycles. If a cycle takes longer,
@@ -61,7 +61,7 @@ config APP_THINGSBOARD_ACCESS_TOKEN
 
 config APP_COAP_ACK_TIMEOUT_MS
 	int "CoAP initial ACK timeout in milliseconds"
-	default 8000
+	default 60000
 	range 1000 100000
 
 config APP_COAP_MAX_RETRANSMIT

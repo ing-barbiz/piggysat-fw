@@ -1,6 +1,6 @@
 # piggysat
 
-Communicator firmware for the PiggySat board. Every 5 minutes it:
+Communicator firmware for the PiggySat board. Every 15 minutes it:
 
 1. acquires a GNSS fix (single fix, up to `CONFIG_APP_GNSS_FIX_TIMEOUT_SECONDS`); without a fix the
    cycle is aborted: no connection, no message
@@ -19,7 +19,7 @@ the magnet starts a new cycle at once, then the periodic reporting resumes.
 | Sent (green) | on for 30 s after the server accepted the message |
 
 The period runs from the start of one cycle to the start of the next. A cycle can take several
-minutes (GNSS fix, NTN attach ~1 min, message ~30 s, detach ~30 s); if it takes longer than the
+minutes (in the end-to-end test: GNSS fix 27 s, NTN attach 46 s, message 47 s, detach 34 s); if it takes longer than the
 period, the next cycle starts immediately.
 
 See the [main README](../README.md) for building, flashing, the board and debug access.
@@ -29,7 +29,7 @@ See the [main README](../README.md) for building, flashing, the board and debug 
 A confirmable CoAP `POST` (JSON) to `api/v1/<token>/telemetry` on ThingsBoard:
 
 ```json
-{"message":"piggysat","latitude":45.409290,"longitude":11.910460,"altitude":48.6,"accuracy":7.3}
+{"message":"piggysat","latitude":45.409442,"longitude":11.910877,"altitude":53.0,"accuracy":26.5}
 ```
 
 | Field | Meaning |
@@ -63,14 +63,14 @@ Options are in [Kconfig](Kconfig) and set in [prj.conf](prj.conf); the access to
 
 | Option | Default | Purpose |
 |---|---|---|
-| `CONFIG_APP_REPORT_INTERVAL_SECONDS` | 300 | cycle period |
+| `CONFIG_APP_REPORT_INTERVAL_SECONDS` | 900 | cycle period |
 | `CONFIG_APP_GNSS_FIX_TIMEOUT_SECONDS` | 180 | maximum time for the GNSS fix; no fix aborts the cycle |
 | `CONFIG_APP_LTE_ATTACH_TIMEOUT_SECONDS` | 600 | maximum time for the NTN attach |
 | `CONFIG_APP_SENT_LED_ON_SECONDS` | 30 | sent LED on-time |
 | `CONFIG_APP_LED_BLINK_MS` | 250 | blink half period |
 | `CONFIG_APP_TELEMETRY_MESSAGE` | `piggysat` | `message` field |
 | `CONFIG_APP_THINGSBOARD_HOST` / `_IPV4` / `_PORT` / `_ACCESS_TOKEN` | | ThingsBoard endpoint |
-| `CONFIG_APP_COAP_ACK_TIMEOUT_MS` / `_MAX_RETRANSMIT` | 8000 / 2 | CoAP retransmission timing |
+| `CONFIG_APP_COAP_ACK_TIMEOUT_MS` / `_MAX_RETRANSMIT` | 60000 / 2 | CoAP retransmission timing; the server's ACK took about 30 s over the satellite in testing |
 | `CONFIG_APP_APN`, `CONFIG_APP_BAND_LOCK_LIST`, `CONFIG_APP_MODEM_FW_EXPECTED` | | modem and NTN setup |
 | `CONFIG_APP_NTN_LOCATION_VALIDITY_SECONDS` | 43200 | validity of the NTN location given to the modem |
 

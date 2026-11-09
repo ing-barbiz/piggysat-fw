@@ -12,7 +12,7 @@ hardware and measurements are in [ing-barbiz/piggysat](https://github.com/ing-ba
 
 This repository holds two Zephyr applications for the same board:
 
-- **[piggysat](piggysat/)** is the communicator. Every 5 minutes it acquires a GNSS fix, attaches
+- **[piggysat](piggysat/)** is the communicator. Every 15 minutes it acquires a GNSS fix, attaches
   to the satellite network and sends the position to ThingsBoard over CoAP, then sleeps with the
   modem off. A magnet on the sensor puts it in standby.
 - **[piggysat-test](piggysat-test/)** is the hardware test tool. It exposes shell commands over RTT
@@ -23,7 +23,7 @@ This repository holds two Zephyr applications for the same board:
 
 | Folder | Content |
 |---|---|
-| [piggysat/](piggysat/) | Communicator firmware: every 5 minutes a GNSS fix, then the position over NTN to ThingsBoard; a magnet puts it in standby |
+| [piggysat/](piggysat/) | Communicator firmware: every 15 minutes a GNSS fix, then the position over NTN to ThingsBoard; a magnet puts it in standby |
 | [piggysat-test/](piggysat-test/) | Hardware test tool: LED, magnet sensor, CW TX, GNSS, SIM and LTE message tests as shell commands over RTT |
 | [boards/piggysat/](boards/piggysat/) | Zephyr board definition shared by both apps |
 | `secrets.conf` | ThingsBoard access token, git-ignored, shared by both apps (see [secrets.conf.example](secrets.conf.example)) |
@@ -105,7 +105,7 @@ nRF91 layout, so TF-M starts at `0x0` and the application at `0x40000`.
 | GNSS LED, red (D1) | 48 | P0.29 | `led0` / `gnss_led` | active low |
 | LTE LED, orange (D2) | 47 | P0.28 | `led1` / `lte_led` | active low |
 | Sent LED, green (D3) | 45 | P0.27 | `led2` / `sent_led` | active low |
-| Magnet sensor (U3 output) | 80 | P0.19 | `sw0` / `magnet_sensor` | active low = magnet present |
+| Magnet sensor (S1) | 80 | P0.19 | `sw0` / `magnet_sensor` | active low = magnet present |
 | Antenna selection switch (J3) | 12 | P0.25 | `antenna_switch` (`piggysat,antenna-switch`) | output: low = LTE, high = GNSS |
 
 ## End-to-end test
@@ -140,7 +140,7 @@ no terrestrial network involved.
 3. The firmware sends one confirmable CoAP `POST` to `api/v1/<token>/telemetry` with the position:
 
    ```json
-   {"message":"piggysat","latitude":45.409290,"longitude":11.910460,"altitude":48.6,"accuracy":7.3}
+   {"message":"piggysat","latitude":45.409442,"longitude":11.910877,"altitude":53.0,"accuracy":26.5}
    ```
 
 4. ThingsBoard acknowledges the request; the green LED stays on for 30 s and the RTT log shows the
